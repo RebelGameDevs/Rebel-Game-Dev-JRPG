@@ -1,0 +1,10 @@
+newmtl Pipe
+map_Kd GridBox_Default.png
+Kd 0.02277458 1 0
+d 1
+
+newmtl PipeAlt
+map_Kd GridBox_Default.png
+Kd 0.1020859 0.6037736 0
+d 1
+
