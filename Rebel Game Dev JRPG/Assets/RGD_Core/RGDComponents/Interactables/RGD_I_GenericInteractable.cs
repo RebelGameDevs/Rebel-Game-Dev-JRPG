@@ -42,7 +42,7 @@ namespace RebelGameDevs.Interaction
             if(!canBeInteractedWith) return;
             canBeInteractedWith = false;
             canBeLookedAt = false;
-            StartCoroutine(SimpleLerpToDestroy(this.gameObject, timeToLerpOut));
+            StartCoroutine(SimpleLerpScaleToDestroy(this.gameObject, timeToLerpOut));
         }
     }
 }

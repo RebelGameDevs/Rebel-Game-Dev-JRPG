@@ -9,7 +9,7 @@ namespace RebelGameDevs.Utils
     {
         //Read Onlys:
         private static readonly string errorMessage = "REBEL GAME DEVS ERROR POP UP";
-        private static readonly string popUpWizard = "REBEL GAME DEVS Wizard";
+        private static readonly string popUpWizard =  "REBEL GAME DEVS Wizard";
         private static readonly Vector2 minwindowSize = new Vector2(510, 450);
         private static readonly Vector2 maxWindowSize = new Vector2(510, 750);
 
@@ -26,7 +26,7 @@ namespace RebelGameDevs.Utils
             if(userInput == 1) return;
             if(userInput == 0)
             {//Editors Camera Position:
-                obj = (Transform)AssetDatabase.LoadAssetAtPath("Assets/RGD_Core/Prefabs/FirstPersonController.prefab", typeof(Transform));
+                obj = Resources.Load("RGDStarters/FirstPersonController", typeof(Transform)) as Transform;
                 controller = Object.Instantiate(obj, SceneView.GetAllSceneCameras()[0].transform.position, Quaternion.identity).transform;
                 window = EditorWindow.GetWindow<RGD_PlayerControllerSetup>("RGD Wizard");
                 window.Show();
@@ -36,13 +36,43 @@ namespace RebelGameDevs.Utils
                 return;
             }
             //Else world origin: 
-            obj = (Transform)AssetDatabase.LoadAssetAtPath("Assets/RGD_Core/Prefabs/FirstPersonController.prefab", typeof(Transform));
+            obj = Resources.Load("RGDStarters/FirstPersonController", typeof(Transform)) as Transform;
             controller = Object.Instantiate(obj, Vector3.zero, Quaternion.identity).transform;
             window = EditorWindow.GetWindow<RGD_PlayerControllerSetup>("PRGD Wizard");
             window.Show();
             window.minSize = minwindowSize;
             window.maxSize = maxWindowSize;
             window.SetPlayer(controller.GetComponent<RGD_CharacterController>());
+        }
+        [MenuItem("Rebel Game Devs/Core/Create A 2.5D Character Controller")]
+        public static void CreatePlayer2p5D()
+        {
+            int userInput;
+            Transform obj;
+            Transform controller;
+            userInput = EditorUtility.DisplayDialogComplex($"{popUpWizard}:", "Welcome to the Rebel Game Devs 2.5D Controller Wizard." +
+		        "\n\n Where would you like to spawn the player in the Unity Editor?", "Editors Cam Pos. ", "Close", "World Origin");
+            RGD_2p5DCharacterControllerSetup window;
+            if(userInput == 1) return;
+            if(userInput == 0)
+            {//Editors Camera Position:
+                obj = Resources.Load("RGDStarters/2.5DHolder", typeof(Transform)) as Transform;
+                controller = Object.Instantiate(obj, SceneView.GetAllSceneCameras()[0].transform.position, Quaternion.identity).transform;
+                window = EditorWindow.GetWindow<RGD_2p5DCharacterControllerSetup>("RGD Wizard");
+                window.Show();
+                window.minSize = minwindowSize;
+                window.maxSize = maxWindowSize;
+                window.SetPlayer(controller.GetComponentInChildren<RGD_2p5DController>());
+                return;
+            }
+            //Else world origin: 
+            obj = Resources.Load("RGDStarters/2.5DHolder", typeof(Transform)) as Transform;
+            controller = Object.Instantiate(obj, Vector3.zero, Quaternion.identity).transform;
+            window = EditorWindow.GetWindow<RGD_2p5DCharacterControllerSetup>("RGD Wizard");
+            window.Show();
+            window.minSize = minwindowSize;
+            window.maxSize = maxWindowSize;
+            window.SetPlayer(controller.GetComponentInChildren<RGD_2p5DController>());
         }
 
         [MenuItem("Rebel Game Devs/Core/Add A Inventory System (Select A Camera)")]

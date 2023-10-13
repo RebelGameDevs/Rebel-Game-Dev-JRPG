@@ -4,7 +4,7 @@ Creator: Mythic (Brandon)
 Rebel Game Devs 3rd Party:
 
 YOU ARE NOT ALLOWED TO TOUCH THIS ADD OR DELETE FROM THIS FOLDER...
--> only admins/officers are allowed to touch this folder. You may use assets in this folder,
-but you may not modify them in any way. For instance, if there is a text asset... You many not
-modify the text asset. Instead you may create a copy of it and import that into your folder/directory
+Please open the website folder under Assets/GettingStarted/Docs/index.html 
+(this should open in your browser, from there you can navigate in the website
+to find the documentation on the OPS (Open Source Project)).
 

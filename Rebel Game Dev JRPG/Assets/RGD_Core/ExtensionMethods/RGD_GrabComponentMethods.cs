@@ -8,7 +8,7 @@ namespace RebelGameDevs.Utils.World
 		/*
 		====================================================================================================
 		TryAndShootRay:
-			=> This is never called by you and will only be called from methods inside of this static class:
+			=> These are never called by you and will only be called from methods inside of this static class:
 		====================================================================================================
 		*/
 		private static bool TryAndShootRay(Camera cam, float distance, out RaycastHit hitResult)

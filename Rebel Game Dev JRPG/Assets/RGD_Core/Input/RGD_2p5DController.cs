@@ -1,6 +1,12 @@
+using RebelGameDevs.Utils.Input;
+using UnityEditor;
+using UnityEngine;
+
 namespace RebelGameDevs.Utils.Input
 {
+    using RebelGameDevs.Utils.World;
     using UnityEngine;
+    using static RebelGameDevs.Utils.World.RGD_GrabComponentMethods;
 
     public class RGD_2p5DController : MonoBehaviour
     {
@@ -148,3 +154,56 @@ namespace RebelGameDevs.Utils.Input
         }
     }
 }
+#if UNITY_EDITOR
+public class RGD_2p5DCharacterControllerSetup : EditorWindow
+{
+    private RGD_2p5DController controller;
+    private bool IsSelectingPlayerModifications = false;
+    private static readonly string note = $"2.5D CharacterController Notes:\n" +
+			                             $"------------------------\n\n" +
+			                             $"This is a base controller. The intended use is for beginner programmers and/or to build off of. " +
+								         $"We strongly recommend to only use this to debug things in your games. There is also a FPS controller " +
+								         $"called \"FPS Controller\" if this suites your needs better. \n\n" +
+								         $"To get started on customization please click the player in the scene. NOTE: it already " +
+								         $"comes with a base type set camera. Please ensure you delete any other cameras in your scene or set them "+
+                                         $"to inactive or as a overlay cam.";
+                
+    private void OnEnable()
+    {
+        IsSelectingPlayerModifications = false;
+    }
+    private void OnGUI()
+    {
+        GUILayout.Label("2.5D Character Controller: ");
+        if (controller == null)
+        {
+            GUI.backgroundColor = Color.black;
+            GUILayout.Button("Can't Find Player");
+            GUI.backgroundColor = Color.red;
+            if (GUILayout.Button("Close")) this.Close();    
+            return;
+        }
+        EditorGUILayout.BeginHorizontal();
+        var temp = (GameObject)EditorGUILayout.ObjectField(controller.gameObject, typeof(GameObject), false);
+        EditorGUILayout.EndHorizontal();
+
+        GUI.backgroundColor = Color.black;
+
+        if(!IsSelectingPlayerModifications && GUILayout.Button("Read Notes About Character Controller")) IsSelectingPlayerModifications = true;
+        if (IsSelectingPlayerModifications) Notes();
+
+        GUI.backgroundColor = Color.red;
+        if (GUILayout.Button("Close")) this.Close();    
+    }
+    private void Notes()
+    {
+        GUI.color = Color.white;
+        GUI.backgroundColor = Color.black;
+        EditorGUILayout.TextArea(note);
+    }
+    public void SetPlayer(RGD_2p5DController controller)
+    {
+        this.controller = controller;
+    }
+}
+#endif
