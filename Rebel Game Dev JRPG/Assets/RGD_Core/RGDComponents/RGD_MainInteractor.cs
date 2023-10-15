@@ -38,12 +38,12 @@ namespace RebelGameDevs.Interaction
                 }
 
                 //Else Look At Messenger:
-                interactText.SetText($"{interactable.LookAtMessenger()}");
+                if(interactText is not null) interactText.SetText($"{interactable.LookAtMessenger()}");
                 return;
             }
 
             //If the raycast fails set the text to null (emulating the text being blank):
-            interactText.SetText("");
+            if(interactText is not null) interactText.SetText("");
         }
         private void OnDrawGizmos()
         {
