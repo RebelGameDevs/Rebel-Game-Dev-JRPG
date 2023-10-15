@@ -44,6 +44,13 @@ namespace RebelGameDevs.Utils
             window.maxSize = maxWindowSize;
             window.SetPlayer(controller.GetComponent<RGD_CharacterController>());
         }
+        [MenuItem("Rebel Game Devs/Core/TurnBasedController")]
+        public static void CreateTurnBasedController()
+        {
+            var obj = Resources.Load("RGDStarters/TurnBased", typeof(Transform)) as Transform;
+            GameObject.Instantiate(obj);
+        }
+
         [MenuItem("Rebel Game Devs/Core/Create A 2.5D Character Controller")]
         public static void CreatePlayer2p5D()
         {
