@@ -33,7 +33,7 @@ namespace RebelGameDevs.Interaction
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    currentHoveredObject.StoppedHovering();
+                    if(currentHoveredObject is not null) currentHoveredObject.StoppedHovering();
                     currentHoveredObject = null;
                     mouseInteractable.ClickedOn();
                     return;
