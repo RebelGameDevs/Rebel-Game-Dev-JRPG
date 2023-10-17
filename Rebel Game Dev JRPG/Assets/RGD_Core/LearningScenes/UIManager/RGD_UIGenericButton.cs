@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     private enum ButtonPointerType
     {
@@ -12,79 +13,199 @@ public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointer
         StoppedHover,
         Clicked
     }
+    public enum ButtonClickType
+    {
+        OnDown,
+        OnRelease
+    }
     [Header("Animation Stuff:")]
     [SerializeField] private AnimationCurve lerpCurve;
-    [SerializeField] private float timeToAnimation;
 
-    [Header("Button Params:")]
-    [SerializeField] private Vector3 rotationEulerEnd;
-    [SerializeField] private Vector3 scaleEnd;
-    [SerializeField] private Vector3 positionLocalEnd;
+    [Header("Hover Event Params:")]
+    [SerializeField] private float hoverTimeToAnimation;
+    [SerializeField] private Vector3 hoverRotationEulerEnd;
+    [SerializeField] private Vector3 hoverScaleEnd;
+    [SerializeField] private Vector3 hoverPositionEnd;
+
+    [Header("Clicked Event Params:")]
+    public ButtonClickType buttonClickAction;
+    [SerializeField] private float clickTimeToAnimation;
+    [SerializeField] private Vector3 clickedRotationEulerEnd;
+    [SerializeField] private Vector3 clickedScaleEnd;
+    [SerializeField] private Vector3 clickedPositionEnd;
+
+    //Delegates (script use case only):
+    public delegate void ButtonDelegateEvent();
+    public ButtonDelegateEvent eventWhenHovered;
+    public ButtonDelegateEvent eventWhenStopHovering;
+    public ButtonDelegateEvent eventWhenPressed;
+
+    //Unity Events (Non script use case only):
+    public UnityEvent unityEventWhenHovering;
+    public UnityEvent unityEventWhenStopHovering;
+    public UnityEvent unityEventWhenPressed;
 
     //Privates:
     private Coroutine lerpCo = null;
-    private Vector3 buttonsStartPos;
-    private Vector3 buttonsStartScale;
-    private Vector3 buttonsStartEulerAngles;
+    private Vector3 buttonStartPos;
+    private Vector3 buttonStartScale;
+    private Vector3 buttonStartEulerAngles;
+    private Color currentColor;
+    private RectTransform rectTransform;
     private void Awake()
     {
-        buttonsStartPos = transform.localPosition;
-        buttonsStartScale = transform.localScale;
-        buttonsStartEulerAngles = transform.localEulerAngles;
+        rectTransform = GetComponent<RectTransform>();
+        buttonStartPos = rectTransform.localPosition;
+        buttonStartScale = rectTransform.localScale;
+        buttonStartEulerAngles = rectTransform.localEulerAngles;
+        currentColor = rectTransform.GetComponent<Image>().color;
+
     }
     private void Clicked(ButtonPointerType type)
     {
-        if(lerpCo != null) StopCoroutine(lerpCo);
+        if (lerpCo != null) StopCoroutine(lerpCo);
         if (type is ButtonPointerType.StartedHovered)
         {
+            if(eventWhenHovered is not null) eventWhenHovered.Invoke();
+            if(unityEventWhenHovering is not null) unityEventWhenHovering.Invoke();
             lerpCo = StartCoroutine(LerpButton(true));
             return;
         }
         if (type is ButtonPointerType.StoppedHover)
         {
+            if(eventWhenStopHovering is not null) eventWhenStopHovering.Invoke();
+            if(unityEventWhenStopHovering is not null) unityEventWhenStopHovering.Invoke();
             lerpCo = StartCoroutine(LerpButton(false));
             return;
         }
+        if(eventWhenPressed is not null) eventWhenPressed.Invoke();
+        if(unityEventWhenPressed is not null) unityEventWhenPressed.Invoke();
+        lerpCo = StartCoroutine(RGDButtonPressed());
         //Else we clicked:
     }
     //When Hovered:
     public void OnPointerEnter(PointerEventData pointerEventData)
     {
-        Debug.Log("Hover");
-       Clicked(ButtonPointerType.StartedHovered);
+        Clicked(ButtonPointerType.StartedHovered);
     }
     //When Stopped Hover:
     public void OnPointerExit(PointerEventData pointerEventData)
     {
-        Debug.Log("Stop Hover");
-       Clicked(ButtonPointerType.StoppedHover);
+        Clicked(ButtonPointerType.StoppedHover);
     }
-    //When Clicking:
-    public void OnPointerClick(PointerEventData pointerEventData)
+    //When Pressed Down:
+    public void OnPointerDown(PointerEventData pointerEventData)
     {
-        Debug.Log("clicked");
-       Clicked(ButtonPointerType.Clicked);
+        if (buttonClickAction is ButtonClickType.OnDown) Clicked(ButtonPointerType.Clicked);
+    }
+    //When Pressed Up:
+    public void OnPointerUp(PointerEventData pointerEventData)
+    {
+        if (buttonClickAction is ButtonClickType.OnRelease) Clicked(ButtonPointerType.Clicked);
     }
     private IEnumerator LerpButton(bool value)
     {
+        //Keep track of time:
         float localTTime = 0;
-        Vector3 currentPos = transform.localPosition;
-        Vector3 currentEulerAngle = transform.localEulerAngles;
-        Vector3 currentScale = transform.localScale;
-        while(localTTime < 1)
+
+        //Grab current state of  button:
+        Vector3 currentPos = rectTransform.localPosition;
+        Vector3 currentEulerAngle = rectTransform.localEulerAngles;
+        Vector3 currentScale = rectTransform.localScale;
+
+        while (localTTime < 1)
         {
-            localTTime += Time.deltaTime / timeToAnimation;
-            transform.localPosition = Vector3.Lerp(currentPos, value ? positionLocalEnd : buttonsStartPos,
+            //Calculate how far we are from [0 - 1].
+            localTTime += Time.deltaTime / hoverTimeToAnimation;
+
+            //Animate position:
+            rectTransform.localPosition = Vector3.Lerp(currentPos, value ? hoverPositionEnd : buttonStartPos,
                                         lerpCurve.Evaluate(localTTime));
-            transform.localEulerAngles = Vector3.Lerp(currentEulerAngle, value ? rotationEulerEnd : buttonsStartEulerAngles,
+            //Animate rotation:
+            //NOTE: using Lerp Angle to take the shortest route other wise going negative will lerp wrong.
+            Vector3 rotation = new Vector3(
+                Mathf.LerpAngle(currentEulerAngle.x, value ? hoverRotationEulerEnd.x : buttonStartEulerAngles.x, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.y, value ? hoverRotationEulerEnd.y : buttonStartEulerAngles.y, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.z, value ? hoverRotationEulerEnd.z : buttonStartEulerAngles.z, lerpCurve.Evaluate(localTTime))
+            );
+            transform.eulerAngles = rotation;
+
+            //Animate scale:
+            rectTransform.localScale = Vector3.Lerp(currentScale, value ? hoverScaleEnd : buttonStartScale,
                                         lerpCurve.Evaluate(localTTime));
-            transform.localScale = Vector3.Lerp(currentScale, value ? scaleEnd : buttonsStartScale,
-                                        lerpCurve.Evaluate(localTTime));
+
+            //Wait 1 frame:
             yield return null;
         }
-        transform.localPosition =  value ? positionLocalEnd : buttonsStartPos;
-        transform.localEulerAngles = value ? rotationEulerEnd : buttonsStartEulerAngles;
-        transform.localScale = value ? scaleEnd : buttonsStartScale;
+
+        //Most of the time lerping never fully get's to destination so we will just set it here:
+        rectTransform.localPosition = value ? hoverPositionEnd : buttonStartPos;
+        rectTransform.localEulerAngles = value ? hoverRotationEulerEnd : buttonStartEulerAngles;
+        rectTransform.localScale = value ? hoverScaleEnd : buttonStartScale;
+
+        //Set coroutine to null for stopping co's.
         lerpCo = null;
+    }
+    private IEnumerator RGDButtonPressed()
+    {
+        //For tracking time:
+        float localTTime = 0;
+
+        //Get current state of button:
+        Vector3 currentPos = rectTransform.localPosition;
+        Vector3 currentEulerAngle = rectTransform.localEulerAngles;
+        Vector3 currentScale = rectTransform.localScale;
+
+        while (localTTime < 1)
+        {
+            //Calculate how far we are from [0 - 1].
+            localTTime += Time.deltaTime / (clickTimeToAnimation * .5f);
+
+            //Animate position:
+            rectTransform.localPosition = Vector3.Lerp(currentPos,
+                                      clickedPositionEnd, lerpCurve.Evaluate(localTTime));
+
+            //Animate rotation:
+            //NOTE: using Lerp Angle to take the shortest route other wise going negative will lerp wrong.
+            Vector3 rotation = new Vector3(
+                Mathf.LerpAngle(currentEulerAngle.x, clickedRotationEulerEnd.x, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.y, clickedRotationEulerEnd.y, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.z, clickedRotationEulerEnd.z, lerpCurve.Evaluate(localTTime))
+            );
+            rectTransform.eulerAngles = rotation;
+
+            //Animate scale:
+            rectTransform.localScale = Vector3.Lerp(currentScale,
+                                   clickedScaleEnd, lerpCurve.Evaluate(localTTime));
+
+            //Wait one frame:
+            yield return null;
+        }
+
+        //Most of the time lerping never fully get's to destination so we will just set it here:
+        currentPos = rectTransform.localPosition;
+        currentEulerAngle = rectTransform.localEulerAngles;
+        currentScale = rectTransform.localScale;
+
+        //Now animate the entire thing backwards:
+        localTTime = 0;
+        while (localTTime < 1)
+        {
+            localTTime += Time.deltaTime / (clickTimeToAnimation * .5f);
+            rectTransform.localPosition = Vector3.Lerp(currentPos,
+                                      buttonStartPos, lerpCurve.Evaluate(localTTime));
+            Vector3 rotation = new Vector3(
+                Mathf.LerpAngle(currentEulerAngle.x, buttonStartEulerAngles.x, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.y, buttonStartEulerAngles.y, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.z, buttonStartEulerAngles.z, lerpCurve.Evaluate(localTTime))
+            );
+            rectTransform.eulerAngles = rotation;
+            rectTransform.localScale = Vector3.Lerp(currentScale,
+                                   buttonStartScale, lerpCurve.Evaluate(localTTime));
+            yield return null;
+        }
+        rectTransform.localPosition = buttonStartPos;
+        rectTransform.localEulerAngles = buttonStartEulerAngles;
+        rectTransform.localScale = buttonStartScale;
     }
 }
