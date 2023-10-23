@@ -14,17 +14,15 @@ namespace RebelGameDevs.Extra
         const float MAX_COLOR_VALUE = 1.0f;
         private enum SkyboxHandleType {
             none,
-            increaseRed,
-            decreaseRed,
-            increaseGreen,
-            decreaseGreen,
-            increaseBlue,
-            decreaseBlue,
-            increaseAlpha,
-            decreaseAlpha
+            Red,
+            Green,
+            Blue,
+            Alpha
         }
         
-        [Tooltip("Target skybox to control.")]
+        [Tooltip("Decrease?")]
+        [SerializeField] private bool _decrease;
+        [Tooltip("Object with RGD_SkyboxControl script attached.")]
         [SerializeField] private RGD_SkyboxControl control;
         [Tooltip("How much each button will increase or decrease the given RGBA value.")]
         [SerializeField] private float colorStep = 0.1f;
@@ -34,16 +32,7 @@ namespace RebelGameDevs.Extra
         
         private Coroutine isAnimating = null;
 
-        
-
-        // overrides
-        public override string LookAtMessenger()
-        {
-            Debug.Log("LookAt registered");
-            // return empty string; don't want any gui text for these buttons
-            return "";
-        }
-
+        // override
         public override void InteractedWithMessenger()
         {
             if(isAnimating != null) return; 
@@ -53,29 +42,17 @@ namespace RebelGameDevs.Extra
 
         private void HandleRGBAButton() {
             switch(buttonType) {
-                case SkyboxHandleType.increaseRed:
-                    UpdateColorValue(ref control.tintColor.r, true);
+                case SkyboxHandleType.Red:
+                    UpdateColorValue(ref control.tintColor.r);
                     break;
-                case SkyboxHandleType.decreaseRed:
-                    UpdateColorValue(ref control.tintColor.r, false);
+                case SkyboxHandleType.Green:
+                    UpdateColorValue(ref control.tintColor.g);
                     break;
-                case SkyboxHandleType.increaseGreen:
-                    UpdateColorValue(ref control.tintColor.g, true);
+                case SkyboxHandleType.Blue:
+                    UpdateColorValue(ref control.tintColor.b);
                     break;
-                case SkyboxHandleType.decreaseGreen:
-                    UpdateColorValue(ref control.tintColor.g, false);
-                    break;
-                case SkyboxHandleType.increaseBlue:
-                    UpdateColorValue(ref control.tintColor.b, true);
-                    break;
-                case SkyboxHandleType.decreaseBlue:
-                    UpdateColorValue(ref control.tintColor.b, false);
-                    break;
-                case SkyboxHandleType.increaseAlpha:
-                    UpdateColorValue(ref control.tintColor.a, true);
-                    break;
-                case SkyboxHandleType.decreaseAlpha:
-                    UpdateColorValue(ref control.tintColor.a, false);
+                case SkyboxHandleType.Alpha:
+                    UpdateColorValue(ref control.tintColor.a);
                     break;
                 case SkyboxHandleType.none:
                 default:
@@ -89,9 +66,9 @@ namespace RebelGameDevs.Extra
             @param value Value to be handled, passed by reference
             @param increase Increase the value? => True to increment, false to decrement.
         */
-        private void UpdateColorValue(ref float value, bool increase) {
+        private void UpdateColorValue(ref float value) {
             float ans = value;
-            if(increase) {
+            if(!_decrease) {
                 ans += colorStep;
             } else {
                 ans -= colorStep;

@@ -7,7 +7,11 @@ public abstract class RGD_InteractorTypes : MonoBehaviour
     //Bridger Methods:
 
         //When Looked At:
-        public abstract string LookAtMessenger();
+        // Make virtual as people may not always want to have a GUI update
+        // for an interactable
+        public virtual string LookAtMessenger() {
+            return "";
+        }
     
         //When Interacted With:
         public abstract void InteractedWithMessenger();
