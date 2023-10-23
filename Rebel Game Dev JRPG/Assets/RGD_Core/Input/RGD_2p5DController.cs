@@ -8,7 +8,7 @@ namespace RebelGameDevs.Utils.Input
     using UnityEngine;
     using static RebelGameDevs.Utils.World.RGD_GrabComponentMethods;
 
-    public class RGD_2p5DController : MonoBehaviour
+    [RequireComponent(typeof(CharacterController))]public class RGD_2p5DController : MonoBehaviour
     {
         //Lambdas:
         [HideInInspector] public bool IsSprinting => canSprint && Input.GetKey(sprintKey);
@@ -39,7 +39,10 @@ namespace RebelGameDevs.Utils.Input
 
         [Header("Physics: ")]
         [SerializeField] protected float gravity = 30.0f;
-        [SerializeField] protected LayerMask ground;
+        
+        //Depreciated:
+        //[SerializeField] protected LayerMask ground;
+        
         public float getter_gravity { get {return gravity;} set {gravity = value;} }
 
         [Header("Cursor:")]
@@ -47,8 +50,8 @@ namespace RebelGameDevs.Utils.Input
         [SerializeField] protected CursorMode cursorMode = CursorMode.Auto;
         [SerializeField] protected Vector2 hotSpotZone = Vector2.zero;
 
-        //Camera
-        [SerializeField] protected Camera playerCamera;
+        //Camera - Depreciated:
+        //[SerializeField] protected Camera playerCamera;
 
         //Private Variables:
         private CharacterController characterController;
@@ -60,7 +63,9 @@ namespace RebelGameDevs.Utils.Input
         {
             characterController = GetComponent<CharacterController>();
             SetMouseOptions(true, CursorLockMode.Confined);
-            if (playerCamera == null) { Debug.LogError("<color=red> ERROR:</color> No Camera assigned for the <color=green>character controller</color>."); Destroy(this);}
+            SetCursor();
+            //Depereciated: Now using cinemachine:
+            //if (playerCamera == null) { Debug.LogError("<color=red> ERROR:</color> No Camera assigned for the <color=green>character controller</color>."); Destroy(this);}
         }
         private void Update()
         {
@@ -76,6 +81,7 @@ namespace RebelGameDevs.Utils.Input
         {
             canMove = value;
         }
+        
         private void HandleMovementInput()
         {
             currentInput = new Vector2((IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxisRaw("Vertical"), (IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxisRaw("Horizontal"));

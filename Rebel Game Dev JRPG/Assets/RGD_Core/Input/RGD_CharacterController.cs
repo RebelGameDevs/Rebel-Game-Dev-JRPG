@@ -63,7 +63,9 @@ namespace RebelGameDevs.Utils.Input
 
         [Header("Physics: ")]
         [SerializeField] protected float gravity = 30.0f;
-        [SerializeField] protected LayerMask ground;
+        
+        //Depreciated:
+        //[SerializeField] protected LayerMask ground;
         public float getter_gravity { get {return gravity;} set {gravity = value;} }
 
         //Private Variables:
@@ -271,7 +273,6 @@ class RGD_CharacterControllerEditor : Editor
         canSprint = serializedObject.FindProperty("canSprint");
         canJump = serializedObject.FindProperty("canJump");
         holdToJumpKey = serializedObject.FindProperty("holdKeyToJump");
-        groundLayerMask = serializedObject.FindProperty("ground");
     }
     public override void OnInspectorGUI()
     {
@@ -342,10 +343,6 @@ class RGD_CharacterControllerEditor : Editor
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("-")) {script.getter_gravity -= 1f;}
         EditorGUILayout.EndHorizontal();
-
-        //Players Ground Layer:
-        GUI.backgroundColor = Color.black;
-        EditorGUILayout.PropertyField(groundLayerMask);
     }
     private void HandleMovementParams(RGD_CharacterController script)
     {

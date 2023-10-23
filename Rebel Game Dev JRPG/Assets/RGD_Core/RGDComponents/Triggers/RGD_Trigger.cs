@@ -19,6 +19,7 @@ namespace RebelGameDevs.Interaction
     {
         //Tag or Tags to look for:
         [SerializeField] private string[] tagToLookFor = new string[0];
+        [SerializeField] private Transform[] objectsToLookFor = new Transform[0];
         [SerializeField] private bool oneTimeUseTrigger = false;
 
         //Unity Event To Call
@@ -45,6 +46,16 @@ namespace RebelGameDevs.Interaction
             {
                 //Check tag to invoke event:
                 if (tag == other.gameObject.tag)
+                {
+                    eventToInvoke.Invoke();
+                    atleast1TagFound = true;
+                }
+            }
+            if(atleast1TagFound) return atleast1TagFound;
+            foreach (Transform trans in objectsToLookFor)
+            {
+                //Check tag to invoke event:
+                if (trans == other.gameObject.transform)
                 {
                     eventToInvoke.Invoke();
                     atleast1TagFound = true;

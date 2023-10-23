@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class RenderQueChanger : MonoBehaviour
 {
-    public int renderQueToChange;
+    [SerializeField] private int renderQueToChange;
     public void Awake()
     {
         if(gameObject.TryGetComponent(out Renderer renderer))
@@ -18,4 +18,18 @@ public class RenderQueChanger : MonoBehaviour
             renderer.material.renderQueue = renderQueToChange;
         }
     }
+    public void ResetRenderQue(int render)
+    {
+        renderQueToChange = render;
+        ResetMaterial();
+    }
 }
+public class TestScript : MonoBehaviour
+{
+    [SerializeField] private RenderQueChanger renderQueToChange;
+    private void ChangeRenderQue(int newRenderQue)
+    {
+        renderQueToChange.ResetRenderQue(newRenderQue);
+    }
+}
+
