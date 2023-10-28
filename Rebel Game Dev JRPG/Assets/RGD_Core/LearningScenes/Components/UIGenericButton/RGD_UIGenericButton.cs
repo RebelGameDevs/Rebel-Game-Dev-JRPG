@@ -1,5 +1,19 @@
+/*
+===========================================================================
+Creator: 
+    Brandhon Bird (Mythic)
+Date: 
+    10/22/23
+Purpose:
+    A rebel game dev component to help create UI buttons that have more
+    freedom vs. Unity's generic button. This button allows for callee 
+    methods on click with delegates or Unity Events
+Contact:
+    Should you have any questions or concers, feel free to contact me
+    via phone - +1 (702) - 857 - 1869 | email: mythicgaming234@gmail.com
+===========================================================================
+*/
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -7,17 +21,20 @@ using UnityEngine.UI;
 
 public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
+    //Enum for ButtonPointerState:
     private enum ButtonPointerType
     {
         StartedHovered,
         StoppedHover,
         Clicked
     }
+    //Enum for ButtonClickType
     public enum ButtonClickType
     {
         OnDown,
         OnRelease
     }
+
     [Header("Animation Stuff:")]
     [SerializeField] private AnimationCurve lerpCurve;
 
@@ -42,27 +59,60 @@ public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointer
     public ButtonDelegateEvent eventWhenStopHovering;
     public ButtonDelegateEvent eventWhenPressed;
 
-    //Unity Events (Non script use case only):
+    //Unity Events (Non script use case only, but can be):
     public UnityEvent unityEventWhenHovering;
     public UnityEvent unityEventWhenStopHovering;
     public UnityEvent unityEventWhenPressed;
 
     //Privates:
+    //Coroutine to keep track of IEnumerator:
     private Coroutine lerpCo = null;
+
+    //Start Local Position
     private Vector3 buttonStartPos;
+
+    //Start Scale:
     private Vector3 buttonStartScale;
+
+    //Start Rotation:
     private Vector3 buttonStartEulerAngles;
+
+    //Start Color:
     private Color buttonStartColor;
+
+    //Buttons Rect:
     private RectTransform rectTransform;
     private void Awake()
     {
+        //Set Start Params:
         rectTransform = GetComponent<RectTransform>();
         buttonStartPos = rectTransform.localPosition;
         buttonStartScale = rectTransform.localScale;
         buttonStartEulerAngles = rectTransform.localEulerAngles;
         buttonStartColor = rectTransform.GetComponent<Image>().color;
 
+        //Set states to change so the button can be placed anywhere:
+        hoverPositionEnd += buttonStartPos;
+        clickedPositionEnd += buttonStartPos;
+
+        hoverRotationEulerEnd += buttonStartEulerAngles;
+        clickedRotationEulerEnd += buttonStartEulerAngles;
+
+        hoverScaleEnd.x *= buttonStartScale.x;
+        hoverScaleEnd.y *= buttonStartScale.y;
+        hoverScaleEnd.z *= buttonStartScale.z;
+        clickedScaleEnd.x *= buttonStartScale.x;
+        clickedScaleEnd.y *= buttonStartScale.y;
+        clickedScaleEnd.z *= buttonStartScale.z;
     }
+    /*
+    ===========================================================================
+    void Clicked(ButtonPointerType type):
+        Description:
+            stops last Coroutine to stop last state from overriding. Then checks
+            state and performs the unity and/or delegate event when performing.
+    ===========================================================================
+    */
     private void Clicked(ButtonPointerType type)
     {
         if (lerpCo != null) StopCoroutine(lerpCo);
@@ -80,10 +130,10 @@ public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointer
             lerpCo = StartCoroutine(LerpButton(false));
             return;
         }
+        //Else we clicked:
         if(eventWhenPressed is not null) eventWhenPressed.Invoke();
         if(unityEventWhenPressed is not null) unityEventWhenPressed.Invoke();
         lerpCo = StartCoroutine(RGDButtonPressed());
-        //Else we clicked:
     }
     //When Hovered:
     public void OnPointerEnter(PointerEventData pointerEventData)
@@ -148,7 +198,7 @@ public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointer
 
         //Most of the time lerping never fully get's to destination so we will just set it here:
         rectTransform.localPosition = value ? hoverPositionEnd : buttonStartPos;
-        rectTransform.localEulerAngles = value ? hoverRotationEulerEnd : buttonStartEulerAngles;
+        rectTransform.localEulerAngles = value ? hoverRotationEulerEnd: buttonStartEulerAngles;
         rectTransform.localScale = value ? hoverScaleEnd : buttonStartScale;
         img.color = value ? hoverColorEnd : buttonStartColor;
 
@@ -209,23 +259,23 @@ public class RGD_UIGenericButton : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             localTTime += Time.deltaTime / (clickTimeToAnimation * .5f);
             rectTransform.localPosition = Vector3.Lerp(currentPos,
-                                      buttonStartPos, lerpCurve.Evaluate(localTTime));
+                                      hoverPositionEnd, lerpCurve.Evaluate(localTTime));
             Vector3 rotation = new Vector3(
-                Mathf.LerpAngle(currentEulerAngle.x, buttonStartEulerAngles.x, lerpCurve.Evaluate(localTTime)),
-                Mathf.LerpAngle(currentEulerAngle.y, buttonStartEulerAngles.y, lerpCurve.Evaluate(localTTime)),
-                Mathf.LerpAngle(currentEulerAngle.z, buttonStartEulerAngles.z, lerpCurve.Evaluate(localTTime))
+                Mathf.LerpAngle(currentEulerAngle.x, hoverRotationEulerEnd.x, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.y, hoverRotationEulerEnd.y, lerpCurve.Evaluate(localTTime)),
+                Mathf.LerpAngle(currentEulerAngle.z, hoverRotationEulerEnd.z, lerpCurve.Evaluate(localTTime))
             );
             rectTransform.eulerAngles = rotation;
 
             rectTransform.localScale = Vector3.Lerp(currentScale,
-                                   buttonStartScale, lerpCurve.Evaluate(localTTime));
+                                   hoverScaleEnd, lerpCurve.Evaluate(localTTime));
 
-            img.color = Color.Lerp(currentColor, buttonStartColor, lerpCurve.Evaluate(localTTime));
+            img.color = Color.Lerp(currentColor, hoverColorEnd, lerpCurve.Evaluate(localTTime));
             yield return null;
         }
-        rectTransform.localPosition = buttonStartPos;
-        rectTransform.localEulerAngles = buttonStartEulerAngles;
-        rectTransform.localScale = buttonStartScale;
-        img.color = buttonStartColor;
+        rectTransform.localPosition = hoverPositionEnd;
+        rectTransform.localEulerAngles = hoverRotationEulerEnd;
+        rectTransform.localScale = hoverScaleEnd;
+        img.color = hoverColorEnd;
     }
 }
