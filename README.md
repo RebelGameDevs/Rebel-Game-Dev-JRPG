@@ -14,4 +14,4 @@ assets of their own. Feel free to reach out to any of the officers with any ques
 🖥️ Brandon at mythicgaming234@gmail.com <br />
 🐱‍👤 Dorian at akhavan@unlv.nevada.edu <br />
 🎨 Keyan at hatefk1@unlv.nevada.edu <br />
-See our contact information <a href="rebelgamedevs.org/MainPages/officers.html">here</a>! 
+See our contact information <a target="_blank" href="http://rebelgamedevs.org/MainPages/officers.html">here</a>, as well! 
