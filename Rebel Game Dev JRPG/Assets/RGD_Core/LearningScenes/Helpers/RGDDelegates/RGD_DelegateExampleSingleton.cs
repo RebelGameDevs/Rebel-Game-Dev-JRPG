@@ -52,6 +52,7 @@ public class RGD_DelegateExampleSingleton : MonoBehaviour
     private void SetupDelegates()
     {
         myVoidDelegate += PrintTimeCallee;
+        myVoidDelegate += PrintTimeCallee2;
         myDynamicParamDelegateOff += SetParamsInSceneOff;
         myDynamicParamDelegateOn += SetParamsInSceneOn;
         myDynamicReturnDelegate += GenerateRandomNumber;
@@ -128,8 +129,18 @@ public class RGD_DelegateExampleSingleton : MonoBehaviour
         var dateTime = System.DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
         _3DText.SetText($"Current Time: <color=red>{dateTime}</color>");
     }
+    private void PrintTimeCallee2()
+    {
+        var dateTime = System.DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+        _3DText.SetText($"Current Time: <color=red>{dateTime}</color> secondary");
+    }
     public int GenerateRandomNumber()
     {
         return Random.Range(-20, 20 + 1);
+    }
+
+    public float test()
+    {
+        return 1f;
     }
 }
