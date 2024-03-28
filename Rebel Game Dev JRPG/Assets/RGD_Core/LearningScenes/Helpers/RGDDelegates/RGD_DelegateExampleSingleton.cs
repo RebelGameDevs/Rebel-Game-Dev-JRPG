@@ -41,9 +41,6 @@ public class RGD_DelegateExampleSingleton : MonoBehaviour
     ===========================================================================
     */
 
-    //Counter:
-    private int counter = 0;
-
     //Awake Method(s):
     private void Awake()
     {
