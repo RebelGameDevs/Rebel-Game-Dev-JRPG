@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -62792,7 +62792,7 @@ Mesh:
     path: 
 --- !u!1 &1317988507
 GameObject:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -62809,7 +62809,7 @@ GameObject:
   m_IsActive: 1
 --- !u!114 &1317988508
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -62821,7 +62821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
 --- !u!4 &1317988509
 Transform:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -89920,7 +89920,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: <color=green>Delegates Learning Scene</color>
+  m_text: '<color=green>Delegates Learning Scene GROGGU
+
+    </color>'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4db895071edf2684b81f16b69b203897, type: 2}
   m_sharedMaterial: {fileID: -7660900412873001873, guid: 4db895071edf2684b81f16b69b203897,
@@ -95871,7 +95873,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-297956
+  m_Name: pb_Mesh33554
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
