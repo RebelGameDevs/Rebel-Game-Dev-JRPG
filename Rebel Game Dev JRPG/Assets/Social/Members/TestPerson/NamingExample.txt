@@ -1,2 +1,0 @@
-Folder names should start with your GitHub name. To make sure you are not getting clashing with similar names make sure
-your scripts are named personalFolderName_scriptName --> ex: john_myScriptExample. Alternatively you could use namespaces.
