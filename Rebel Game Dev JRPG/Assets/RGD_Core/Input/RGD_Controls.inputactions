@@ -1,0 +1,34 @@
+{
+    "name": "RGD_Controls",
+    "maps": [
+        {
+            "name": "DefaultMapping",
+            "id": "1665f2bd-b0f0-4af7-9bb5-cc24f882ad65",
+            "actions": [
+                {
+                    "name": "Space",
+                    "type": "Button",
+                    "id": "ab5709bb-ba09-466d-a7cf-bf378cd7759b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9238b264-e3ab-454c-90bb-25286b2a0052",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Space",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
