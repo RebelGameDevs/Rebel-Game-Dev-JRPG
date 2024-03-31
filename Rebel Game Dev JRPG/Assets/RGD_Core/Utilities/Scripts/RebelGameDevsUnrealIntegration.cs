@@ -5,7 +5,9 @@ Purpose: To allow for Unreal Engine Integration support in Unity for UNLV Rebel 
 */
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,6 +18,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	{
 		Started,
 		Performed,
+		Held,
 		Canceled
 	}
 
@@ -193,16 +196,48 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	public abstract class Actor	: UnrealObject {}
 	public abstract class Pawn : Actor
 	{
+		private class InputPerformedHandler
+		{
+			public Coroutine currentCo;
+			public Action<InputAction.CallbackContext> onPerformed;
+			public Action<InputAction.CallbackContext> onCanceled;
+			public InputPerformedHandler(Action<InputAction.CallbackContext> actionToCall, UnrealObject uObject)
+			{
+				onPerformed += (context) =>
+				{
+					currentCo = uObject.StartCoroutine(WhileHeld(actionToCall, context));
+				};
+				onCanceled += (context) =>
+				{
+					if (currentCo is not null) uObject.StopCoroutine(currentCo);
+				};
+			}
+
+			private IEnumerator WhileHeld(Action<InputAction.CallbackContext> eventToCall, InputAction.CallbackContext context)
+			{
+				//while the action has not been cancelled
+				while(true)
+				{
+					eventToCall?.Invoke(context);
+					yield return null;
+				}
+			}
+		}
 		public Action GamemodeInitialized;
 		[HideInInspector] public HUD hud;
 
 		//Controls - [NOTE needs to be casted to get Controls back]:
 		private IInputActionCollection inputInstance = null;
+		private Dictionary<InputAction, InputPerformedHandler> whileHeldActions;
 
 		//Validate Input will take in a Template of a IInputActionCollection interface and make a new control:
 		private Controls ValidateInput<Controls>() where Controls : IInputActionCollection, new()
 		{
-			inputInstance ??= new Controls();
+			if(inputInstance is null)
+			{
+				inputInstance = new Controls();
+				whileHeldActions = new Dictionary<InputAction, InputPerformedHandler>();
+			}
 			return (Controls)inputInstance;
 		}
 		public Controls GrabInputMappingContext<Controls>() where Controls : IInputActionCollection, new()
@@ -245,6 +280,14 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 				case InputActionType.Performed:
 					action.performed += eventToCall;
 					return;
+				case InputActionType.Held:
+					//Create a new class to hold the event and pass a Unreal Object type and store in dictionary:
+					whileHeldActions[action] = new InputPerformedHandler(eventToCall, this);
+
+					//subscribe:
+					action.performed += whileHeldActions[action].onPerformed;
+					action.canceled += whileHeldActions[action].onCanceled;
+					return;
 				case InputActionType.Canceled:
 					action.canceled += eventToCall;
 					return;
@@ -262,19 +305,22 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 				case InputActionType.Performed:
 					action.performed -= eventToCall;
 					return;
+				case InputActionType.Held:
+					//If not contians key - leave:
+					if(!whileHeldActions.ContainsKey(action)) return;
+
+					//else unsubscribe:
+					action.performed -= whileHeldActions[action].onPerformed;
+					action.canceled -= whileHeldActions[action].onCanceled;
+					whileHeldActions.Remove(action);
+					return;
 				case InputActionType.Canceled:
 					action.canceled -= eventToCall;
 					return;
 			}
 		}
 	}
-	public abstract class CharacterController : Pawn 
-	{
-		
-	}
-	public abstract class UIWidget : UnrealObject 
-	{
-		
-	}
+	public abstract class CharacterController : Pawn {}
+	public abstract class UIWidget : UnrealObject {}
 }
 

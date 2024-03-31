@@ -1,18 +1,12 @@
 using RebelGameDevs.Utils.Input;
-using UnityEditor;
 using UnityEngine;
-
+using UnityEditor;
+using RebelGameDevs.Utils.UnrealIntegration;
 namespace RebelGameDevs.Utils.Input
 {
-    using RebelGameDevs.Utils.World;
-    using UnityEngine;
-    using static RebelGameDevs.Utils.World.RGD_GrabComponentMethods;
-
-    [RequireComponent(typeof(CharacterController))]public class RGD_2p5DController : MonoBehaviour
+    [RequireComponent(typeof(UnityEngine.CharacterController))] public class RGD_2p5DController : Pawn
     {
-        //Lambdas:
-        [HideInInspector] public bool IsSprinting => canSprint && Input.GetKey(sprintKey);
-        [HideInInspector] public bool ShouldJump => (!holdKeyToJump ? Input.GetKeyDown(jumpKey) : Input.GetKey(jumpKey)) && characterController.isGrounded;
+        [HideInInspector] public bool isSprinting;
 
         //Inspector Parameters:
         [Header("Functional Options: ")]
@@ -21,51 +15,34 @@ namespace RebelGameDevs.Utils.Input
         [SerializeField] protected bool canJump = true;
         [SerializeField] protected bool holdKeyToJump = true;
 
-        [Header("Controls: ")]
-        public KeyCode sprintKey = KeyCode.LeftShift;
-        public KeyCode jumpKey = KeyCode.Space;
-
         [Header("Movement Parameters: ")]
-        [SerializeField] public float walkSpeed = 3.0f;
-        [SerializeField] public float sprintSpeed = 6.0f;
-        //Getter Setters:
-        public float getter_walkSpeed { get {return walkSpeed;} set {walkSpeed = value;} }
-        public float getter_sprintSpeed { get {return sprintSpeed;} set {sprintSpeed = value;} }
+        public float walkSpeed = 3.0f;
+        public float sprintSpeed = 6.0f;
 
         [Header("Jumping Parameters: ")]
-        [SerializeField] protected float jumpForce = 8.0f;
-        public float getter_jumpForce { get {return jumpForce;} set {jumpForce = value;} }
-
+        public float jumpForce = 8.0f;
 
         [Header("Physics: ")]
-        [SerializeField] protected float gravity = 30.0f;
+        public float gravity = 30.0f;
         
-        //Depreciated:
-        //[SerializeField] protected LayerMask ground;
-        
-        public float getter_gravity { get {return gravity;} set {gravity = value;} }
-
         [Header("Cursor:")]
         [SerializeField] protected Texture2D cursorTexture = null;
         [SerializeField] protected CursorMode cursorMode = CursorMode.Auto;
         [SerializeField] protected Vector2 hotSpotZone = Vector2.zero;
 
-        //Camera - Depreciated:
-        //[SerializeField] protected Camera playerCamera;
-
         //Private Variables:
-        private CharacterController characterController;
+        private UnityEngine.CharacterController characterController;
         private Vector3 moveDirection;
         private Vector2 currentInput;
+        private Vector2 rawInput;
 
         //Methods:
         private void Awake()
         {
-            characterController = GetComponent<CharacterController>();
+            InitializeInput();
             SetMouseOptions(true, CursorLockMode.Confined);
             SetCursor();
-            //Depereciated: Now using cinemachine:
-            //if (playerCamera == null) { Debug.LogError("<color=red> ERROR:</color> No Camera assigned for the <color=green>character controller</color>."); Destroy(this);}
+            characterController = GetComponent<UnityEngine.CharacterController>();
         }
         private void Update()
         {
@@ -73,25 +50,32 @@ namespace RebelGameDevs.Utils.Input
             if(canMove)
             {
                 HandleMovementInput();
-                if(canJump) HandleJump();
                 ApplyFinalMovement();
             }
         }
-        public void DisableOrEnableAllInput(bool value)
+        private void InitializeInput()
         {
-            canMove = value;
+            CreateInput<RGD_Controls>();
+            EnableInput();
+            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
+            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
+            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
+            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
         }
+        public void DisableOrEnableAllInput(bool value) { canMove = value; }
         
         private void HandleMovementInput()
         {
-            currentInput = new Vector2((IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxisRaw("Vertical"), (IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxisRaw("Horizontal"));
+            rawInput = GrabInputMappingContext<RGD_Controls>().DefaultMapping.Move.ReadValue<Vector2>();
+            currentInput = new Vector2((isSprinting ? sprintSpeed : walkSpeed) * rawInput.y, (isSprinting ? sprintSpeed : walkSpeed) * rawInput.x);
             float moveDirectionY = moveDirection.y;
             moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y);
             moveDirection.y = moveDirectionY;
         }
         private void HandleJump()
         {
-            if(ShouldJump) moveDirection.y = jumpForce;
+            if(!characterController.isGrounded) return;
+            moveDirection.y = jumpForce;
         }
         private void ApplyFinalMovement()
         {
