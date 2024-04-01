@@ -4,7 +4,5 @@ Creator: Mythic (Brandon)
 Rebel Game Devs 3rd Party:
 
 YOU ARE NOT ALLOWED TO TOUCH THIS ADD OR DELETE FROM THIS FOLDER...
-Please check documentation to get started at Rebelgamedevs.org/. 
-(this should open in your browser, from there you can navigate in the website
-to find the documentation on the OPS (Open Source Project)).
+Please see Assets/GettingStarting and click the Click Me button to learn more.
 

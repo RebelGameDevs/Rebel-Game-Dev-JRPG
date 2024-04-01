@@ -25,8 +25,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	//Defined static class helpers:
 	public static class UnrealIntegrationAddons
 	{
-		//Is an actor casting check:
-		public static bool IsActor(MonoBehaviour mono, out Actor actor)
+		//Casting:
+		public static bool CastToActor(MonoBehaviour mono, out Actor actor)
 		{
 			if(mono is Actor)
 			{
@@ -34,6 +34,18 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 				return true;
 			}
 			actor = default(Actor);
+			return false;
+		}
+
+
+		public static bool CastToUnrealModule(UnityEngine.Object scriptable, out UnrealModule uModule)
+		{
+			if(scriptable is ScriptableObject)
+			{
+				uModule = (UnrealModule)scriptable;
+				return true;
+			}
+			uModule = default(UnrealModule);
 			return false;
 		}
 
@@ -115,6 +127,10 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			BeginPlay(); 
 		}
 		protected virtual void BeginPlay() { }
+	}
+	public abstract class UnrealModule : ScriptableObject
+	{
+
 	}
 	public abstract class Gamemode : UnrealObject 
 	{
@@ -240,7 +256,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			}
 			return (Controls)inputInstance;
 		}
-		public Controls GrabInputMappingContext<Controls>() where Controls : IInputActionCollection, new()
+		public Controls GetInputMappingContext<Controls>() where Controls : IInputActionCollection, new()
 		{
 			var controls = ValidateInput<Controls>();
 			return controls;

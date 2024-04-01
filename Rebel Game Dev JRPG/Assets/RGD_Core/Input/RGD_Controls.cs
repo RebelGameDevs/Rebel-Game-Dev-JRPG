@@ -53,6 +53,24 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MouseDelta"",
+                    ""type"": ""Value"",
+                    ""id"": ""64d467d4-d67f-405d-bda6-c52806f80d3d"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MousePosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""5b25127a-ba9c-4f78-8973-92e1eb0f7318"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -132,6 +150,28 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7025bca4-5955-4708-ac7b-2ef1e65bae6c"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MouseDelta"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3e395ee1-6683-4755-b946-1f32f87f14a9"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MousePosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -143,6 +183,8 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         m_DefaultMapping_Jump = m_DefaultMapping.FindAction("Jump", throwIfNotFound: true);
         m_DefaultMapping_Move = m_DefaultMapping.FindAction("Move", throwIfNotFound: true);
         m_DefaultMapping_Sprint = m_DefaultMapping.FindAction("Sprint", throwIfNotFound: true);
+        m_DefaultMapping_MouseDelta = m_DefaultMapping.FindAction("MouseDelta", throwIfNotFound: true);
+        m_DefaultMapping_MousePosition = m_DefaultMapping.FindAction("MousePosition", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -207,6 +249,8 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_DefaultMapping_Jump;
     private readonly InputAction m_DefaultMapping_Move;
     private readonly InputAction m_DefaultMapping_Sprint;
+    private readonly InputAction m_DefaultMapping_MouseDelta;
+    private readonly InputAction m_DefaultMapping_MousePosition;
     public struct DefaultMappingActions
     {
         private @RGD_Controls m_Wrapper;
@@ -214,6 +258,8 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_DefaultMapping_Jump;
         public InputAction @Move => m_Wrapper.m_DefaultMapping_Move;
         public InputAction @Sprint => m_Wrapper.m_DefaultMapping_Sprint;
+        public InputAction @MouseDelta => m_Wrapper.m_DefaultMapping_MouseDelta;
+        public InputAction @MousePosition => m_Wrapper.m_DefaultMapping_MousePosition;
         public InputActionMap Get() { return m_Wrapper.m_DefaultMapping; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -232,6 +278,12 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
             @Sprint.started += instance.OnSprint;
             @Sprint.performed += instance.OnSprint;
             @Sprint.canceled += instance.OnSprint;
+            @MouseDelta.started += instance.OnMouseDelta;
+            @MouseDelta.performed += instance.OnMouseDelta;
+            @MouseDelta.canceled += instance.OnMouseDelta;
+            @MousePosition.started += instance.OnMousePosition;
+            @MousePosition.performed += instance.OnMousePosition;
+            @MousePosition.canceled += instance.OnMousePosition;
         }
 
         private void UnregisterCallbacks(IDefaultMappingActions instance)
@@ -245,6 +297,12 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
             @Sprint.started -= instance.OnSprint;
             @Sprint.performed -= instance.OnSprint;
             @Sprint.canceled -= instance.OnSprint;
+            @MouseDelta.started -= instance.OnMouseDelta;
+            @MouseDelta.performed -= instance.OnMouseDelta;
+            @MouseDelta.canceled -= instance.OnMouseDelta;
+            @MousePosition.started -= instance.OnMousePosition;
+            @MousePosition.performed -= instance.OnMousePosition;
+            @MousePosition.canceled -= instance.OnMousePosition;
         }
 
         public void RemoveCallbacks(IDefaultMappingActions instance)
@@ -267,5 +325,7 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
+        void OnMouseDelta(InputAction.CallbackContext context);
+        void OnMousePosition(InputAction.CallbackContext context);
     }
 }

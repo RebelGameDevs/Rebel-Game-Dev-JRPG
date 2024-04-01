@@ -37,7 +37,7 @@ namespace RebelGameDevs.Utils.Input
         private Vector2 rawInput;
 
         //Methods:
-        private void Awake()
+        protected override void BeginPlay()
         {
             InitializeInput();
             SetMouseOptions(true, CursorLockMode.Confined);
@@ -56,17 +56,17 @@ namespace RebelGameDevs.Utils.Input
         private void InitializeInput()
         {
             CreateInput<RGD_Controls>();
+            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
+            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
+            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
+            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
             EnableInput();
-            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
-            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
-            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
-            SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
         }
         public void DisableOrEnableAllInput(bool value) { canMove = value; }
         
         private void HandleMovementInput()
         {
-            rawInput = GrabInputMappingContext<RGD_Controls>().DefaultMapping.Move.ReadValue<Vector2>();
+            rawInput = GetInputMappingContext<RGD_Controls>().DefaultMapping.Move.ReadValue<Vector2>();
             currentInput = new Vector2((isSprinting ? sprintSpeed : walkSpeed) * rawInput.y, (isSprinting ? sprintSpeed : walkSpeed) * rawInput.x);
             float moveDirectionY = moveDirection.y;
             moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y);
@@ -80,8 +80,6 @@ namespace RebelGameDevs.Utils.Input
         private void ApplyFinalMovement()
         {
             if(!characterController.isGrounded) moveDirection.y -= gravity * Time.deltaTime;
-      
-
             characterController.Move(moveDirection * Time.deltaTime);
         }
         //Getter Functions:

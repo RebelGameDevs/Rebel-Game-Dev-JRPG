@@ -7,7 +7,7 @@ public class TestPawn : Pawn
 	{
 		CreateInput<RGD_Controls>();
 		EnableInput();
-		SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Started, (context) => { Debug.Log("WOW"); });
-		SubscribeToEvent(GrabInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { Debug.Log("Performing"); });
+		SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Started, (context) => { Debug.Log("WOW"); });
+		SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { Debug.Log("Performing"); });
 	}
 }

@@ -167,12 +167,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27f9ea770ae0ed34d95c5d9c5cc2aafa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hud: {fileID: 0}
+  isSprinting: 0
   canMove: 1
   canSprint: 1
   canJump: 1
   holdKeyToJump: 1
-  sprintKey: 304
-  jumpKey: 32
   walkSpeed: 3
   sprintSpeed: 6
   lookSpeedX: 3
@@ -181,9 +181,6 @@ MonoBehaviour:
   lowerLookLimit: 80
   jumpForce: 8
   gravity: 30
-  ground:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!33 &8953346424585505748
 MeshFilter:
   m_ObjectHideFlags: 0
