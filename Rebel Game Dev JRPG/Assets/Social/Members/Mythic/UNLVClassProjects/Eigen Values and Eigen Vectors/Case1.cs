@@ -2,7 +2,7 @@ using RebelGameDevs.Utils.UnrealIntegration;
 using UnityEngine;
 namespace Mythic
 {
-    public class Case1 : UnrealUIObject
+    public class Case1 : UnrealObject
     {
         //Defines:
         public struct Matrix2x2

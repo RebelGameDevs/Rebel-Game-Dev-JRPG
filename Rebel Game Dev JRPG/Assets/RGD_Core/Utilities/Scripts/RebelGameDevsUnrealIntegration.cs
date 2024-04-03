@@ -6,10 +6,10 @@ Purpose: To allow for Unreal Engine Integration support in Unity for UNLV Rebel 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.XR.Haptics;
 
 namespace RebelGameDevs.Utils.UnrealIntegration
 {
@@ -90,6 +90,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		{
 			get { return _levelBlueprint; }
 		}
+		private static EventSystem _eventSystem;
+		public static EventSystem EventSystem;
 		public static void SetGamemode(Gamemode gamemode)
 		{
 			_instance = gamemode;
@@ -97,6 +99,14 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		public static void SetLevelBlueprint(LevelBlueprint levelBlueprint)
 		{
 			_levelBlueprint = levelBlueprint;
+		}
+		public static void InitializeEventSystem()
+		{
+			_eventSystem = UnityEngine.Object.FindObjectOfType<EventSystem>();
+			if(_eventSystem is not null) return;
+
+			GameObject eventSystemObject = new GameObject("EventSystem", new Type[] { typeof(EventSystem), typeof(StandaloneInputModule) });
+			_eventSystem = eventSystemObject.GetComponent<EventSystem>();
 		}
 	}
 
@@ -106,9 +116,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		//On proper actor destroys:
 		public Action onDestroyCall;
 
-		protected virtual void InitializedByGamemode() { }
-
 		//Methods:
+		public virtual void InitializedByGamemode() { }
 		private void Awake() { BeginPlay(); }
 		private void Update() { EventTick(); }
 		private void FixedUpdate() { EventTickLate(); }
@@ -118,20 +127,77 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		protected virtual void EventTickLate() { }
 		protected virtual void EventTickFixed() { }
 	}
-	public abstract class UnrealUIObject : MonoBehaviour 
+	public abstract class UnrealUIObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 	{
-		protected UIWidget parent;
+		[HideInInspector] public UIWidget parent;
+		protected UnityEngine.UI.Graphic graphic;
+		public Action onStartHover, onStopHover, onPressed, onReleased, onEnabled, onDisabled;
+		protected bool isDisabled => !graphic.raycastTarget;
 		private void Awake() 
 		{
+			//Find graphic:
+			if(!TryGetComponent(out graphic))Debug.Log($"ERROR: No Graphic on UI Object: <color=green>{this}</color>. " +
+				$"NOTE: Graphic components are items such as Image, Text Mesh Pro, Button, Sprite, etc.");
+			
+			//Find parent widget:
 			parent = GetComponentInParent<UIWidget>();
+			if(parent is null) Debug.Log($"ERROR: No parent Widget found for UI Object: <color=green>{this}</color>.");
+
+			//Call "BeginPlay" method:
 			BeginPlay(); 
 		}
+		public void Enable()
+		{
+			graphic.raycastTarget = true;
+			onEnabled?.Invoke();
+			Enabled();
+		}
+		public void Disable()
+		{
+			graphic.raycastTarget = false;
+			onDisabled?.Invoke();
+			Disabled();
+		}
 		protected virtual void BeginPlay() { }
-	}
-	public abstract class UnrealModule : ScriptableObject
-	{
 
+		//Hovered On:
+		public void OnPointerEnter(PointerEventData eventData)
+		{
+			if(isDisabled) return;
+			onStartHover?.Invoke();
+			StartHovering();
+		}
+		//Hovered Off:
+		public void OnPointerExit(PointerEventData eventData)
+		{
+			if(isDisabled) return;
+			onStopHover?.Invoke();
+			StopHovering();
+		}
+
+		//Clicked:
+		public void OnPointerDown(PointerEventData eventData)
+		{
+			if(isDisabled) return;
+			onPressed?.Invoke();
+			Pressed();
+		}
+
+		//Released:
+		public void OnPointerUp(PointerEventData eventData)
+		{
+			if(isDisabled) return;
+			onReleased?.Invoke();
+			Released();
+		}
+		protected virtual void StartHovering() { }
+		protected virtual void StopHovering() { }
+		protected virtual void Pressed() { }
+		protected virtual void Released() { }
+		protected virtual void Disabled() { }
+		protected virtual void Enabled() { }
 	}
+	public abstract class UnrealModule : ScriptableObject{}
 	public abstract class Gamemode : UnrealObject 
 	{
 		private readonly float HEIGHTCHECK = 100000;
@@ -148,6 +214,9 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			//Set gamemode:
 			GameManager.SetGamemode(this);
 
+			//Setup event system if there is none in the scene:
+			GameManager.InitializeEventSystem();
+
 			//Setup pawn and hud:
 			Pawn pawn = Instantiate(pawnType.gameObject, GrabWorldPlayerSpawn(), GetWorldPlayerRotation(), transform).GetComponent<Pawn>();
 			pawn.hud = Instantiate(hudType.gameObject, GrabWorldPlayerSpawn(), GetWorldPlayerRotation(), transform).GetComponent<HUD>();
@@ -160,8 +229,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			}
 
 			//Finished gamemode initialization: attempt to invoke actions and start level blueprint:
-			pawn.GamemodeInitialized?.Invoke();
-			pawn.hud.GamemodeInitialized?.Invoke();
+			pawn.InitializedByGamemode();
+			pawn.hud.InitializedByGamemode();
 			if(GameManager.LevelBlueprint is not null) StartCoroutine(GameManager.LevelBlueprint.LevelStart());
 		}
 		private bool ErrorCatch()
@@ -193,7 +262,6 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	}
 	public abstract class HUD : UnrealObject 
 	{
-		public Action GamemodeInitialized;
 		public bool AddToViewPort<Widget>(UIWidget widget, out Widget instancedWidget) where Widget : UIWidget
 		{
 			if (widget is null || widget is not Widget)
@@ -238,8 +306,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 					yield return null;
 				}
 			}
+			public virtual void InitializedByGamemode() { }
 		}
-		public Action GamemodeInitialized;
 		[HideInInspector] public HUD hud;
 
 		//Controls - [NOTE needs to be casted to get Controls back]:
