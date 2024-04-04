@@ -71,6 +71,42 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""LMB"",
+                    ""type"": ""Button"",
+                    ""id"": ""0886d89f-acaf-4730-ac30-c382b4564853"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RMB"",
+                    ""type"": ""Button"",
+                    ""id"": ""6cdd7243-f158-4849-a372-161d617e88a8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact1"",
+                    ""type"": ""Button"",
+                    ""id"": ""5d5764b2-2f4f-433b-92dd-32a792738826"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact2"",
+                    ""type"": ""Button"",
+                    ""id"": ""4cc8a43c-880d-4b55-8f18-0617936c97ba"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -172,6 +208,50 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
                     ""action"": ""MousePosition"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""80724001-c036-47bf-b752-2267d980ffce"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LMB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bc5e71e4-9d1a-42d8-ae37-0b474c4d0225"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RMB"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d8b5ba33-84d6-4301-b492-9963a2f24ef3"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e5f8048c-e983-46fa-9e64-021cfe00424b"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -185,6 +265,10 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         m_DefaultMapping_Sprint = m_DefaultMapping.FindAction("Sprint", throwIfNotFound: true);
         m_DefaultMapping_MouseDelta = m_DefaultMapping.FindAction("MouseDelta", throwIfNotFound: true);
         m_DefaultMapping_MousePosition = m_DefaultMapping.FindAction("MousePosition", throwIfNotFound: true);
+        m_DefaultMapping_LMB = m_DefaultMapping.FindAction("LMB", throwIfNotFound: true);
+        m_DefaultMapping_RMB = m_DefaultMapping.FindAction("RMB", throwIfNotFound: true);
+        m_DefaultMapping_Interact1 = m_DefaultMapping.FindAction("Interact1", throwIfNotFound: true);
+        m_DefaultMapping_Interact2 = m_DefaultMapping.FindAction("Interact2", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -251,6 +335,10 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_DefaultMapping_Sprint;
     private readonly InputAction m_DefaultMapping_MouseDelta;
     private readonly InputAction m_DefaultMapping_MousePosition;
+    private readonly InputAction m_DefaultMapping_LMB;
+    private readonly InputAction m_DefaultMapping_RMB;
+    private readonly InputAction m_DefaultMapping_Interact1;
+    private readonly InputAction m_DefaultMapping_Interact2;
     public struct DefaultMappingActions
     {
         private @RGD_Controls m_Wrapper;
@@ -260,6 +348,10 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         public InputAction @Sprint => m_Wrapper.m_DefaultMapping_Sprint;
         public InputAction @MouseDelta => m_Wrapper.m_DefaultMapping_MouseDelta;
         public InputAction @MousePosition => m_Wrapper.m_DefaultMapping_MousePosition;
+        public InputAction @LMB => m_Wrapper.m_DefaultMapping_LMB;
+        public InputAction @RMB => m_Wrapper.m_DefaultMapping_RMB;
+        public InputAction @Interact1 => m_Wrapper.m_DefaultMapping_Interact1;
+        public InputAction @Interact2 => m_Wrapper.m_DefaultMapping_Interact2;
         public InputActionMap Get() { return m_Wrapper.m_DefaultMapping; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -284,6 +376,18 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
             @MousePosition.started += instance.OnMousePosition;
             @MousePosition.performed += instance.OnMousePosition;
             @MousePosition.canceled += instance.OnMousePosition;
+            @LMB.started += instance.OnLMB;
+            @LMB.performed += instance.OnLMB;
+            @LMB.canceled += instance.OnLMB;
+            @RMB.started += instance.OnRMB;
+            @RMB.performed += instance.OnRMB;
+            @RMB.canceled += instance.OnRMB;
+            @Interact1.started += instance.OnInteract1;
+            @Interact1.performed += instance.OnInteract1;
+            @Interact1.canceled += instance.OnInteract1;
+            @Interact2.started += instance.OnInteract2;
+            @Interact2.performed += instance.OnInteract2;
+            @Interact2.canceled += instance.OnInteract2;
         }
 
         private void UnregisterCallbacks(IDefaultMappingActions instance)
@@ -303,6 +407,18 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
             @MousePosition.started -= instance.OnMousePosition;
             @MousePosition.performed -= instance.OnMousePosition;
             @MousePosition.canceled -= instance.OnMousePosition;
+            @LMB.started -= instance.OnLMB;
+            @LMB.performed -= instance.OnLMB;
+            @LMB.canceled -= instance.OnLMB;
+            @RMB.started -= instance.OnRMB;
+            @RMB.performed -= instance.OnRMB;
+            @RMB.canceled -= instance.OnRMB;
+            @Interact1.started -= instance.OnInteract1;
+            @Interact1.performed -= instance.OnInteract1;
+            @Interact1.canceled -= instance.OnInteract1;
+            @Interact2.started -= instance.OnInteract2;
+            @Interact2.performed -= instance.OnInteract2;
+            @Interact2.canceled -= instance.OnInteract2;
         }
 
         public void RemoveCallbacks(IDefaultMappingActions instance)
@@ -327,5 +443,9 @@ public partial class @RGD_Controls: IInputActionCollection2, IDisposable
         void OnSprint(InputAction.CallbackContext context);
         void OnMouseDelta(InputAction.CallbackContext context);
         void OnMousePosition(InputAction.CallbackContext context);
+        void OnLMB(InputAction.CallbackContext context);
+        void OnRMB(InputAction.CallbackContext context);
+        void OnInteract1(InputAction.CallbackContext context);
+        void OnInteract2(InputAction.CallbackContext context);
     }
 }

@@ -1,5 +1,4 @@
 using UnityEngine;
-
 namespace RebelGameDevs.Utils
 {
 	public static class RGDResourceLoader

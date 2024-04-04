@@ -99,12 +99,13 @@ namespace RebelGameDevs.Utils.Input
         }
         private void InitializeInput()
         {
-            CreateInput<RGD_Controls>();
-            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
-            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
-            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
-            SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
-            EnableInput();
+            UnrealInput.Map(this);
+            UnrealInput.CreateInput<RGD_Controls>(this);
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
+            UnrealInput.EnableInput(this);
         }
         /*
         =========================================================================================================
@@ -120,7 +121,7 @@ namespace RebelGameDevs.Utils.Input
         */
         private void HandleMovementInput()
         {
-            rawInput = GetInputMappingContext<RGD_Controls>().DefaultMapping.Move.ReadValue<Vector2>();
+            rawInput = UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Move.ReadValue<Vector2>();
             currentInput = new Vector2((isSprinting ? sprintSpeed : walkSpeed) * rawInput.y, (isSprinting ? sprintSpeed : walkSpeed) * rawInput.x);
             float moveDirectionY = moveDirection.y;
             moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y);
@@ -140,7 +141,7 @@ namespace RebelGameDevs.Utils.Input
         */
         private void HandleMouseLook()
         {
-            Vector2 delta = GetInputMappingContext<RGD_Controls>().DefaultMapping.MouseDelta.ReadValue<Vector2>() * 0.1f;
+            Vector2 delta = UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.MouseDelta.ReadValue<Vector2>() * 0.1f;
             rotationX -= delta.y * lookSpeedY;
             rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);

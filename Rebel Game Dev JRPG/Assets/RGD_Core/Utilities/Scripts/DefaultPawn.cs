@@ -5,10 +5,11 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	{
 		protected override void BeginPlay()
 		{
-			CreateInput<RGD_Controls>();
-			EnableInput();
-			SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Started, (context) => { Debug.Log("Testing Space Btn"); });
-			SubscribeToEvent(GetInputMappingContext<RGD_Controls>().DefaultMapping.Jump, InputActionType.Held, (context) => { Debug.Log("Holding Space Btn"); });
+			UnrealInput.Map(this);
+			UnrealInput.CreateInput<RGD_Controls>(this);
+			UnrealInput.EnableInput(this);
+			UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Started, (context) => { Debug.Log("Testing Space Btn"); });
+			UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Held, (context) => { Debug.Log("Holding Space Btn"); });
 		}
 	}
 }

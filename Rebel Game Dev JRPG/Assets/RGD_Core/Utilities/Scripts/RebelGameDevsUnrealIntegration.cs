@@ -10,6 +10,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.XR.Haptics;
+using System.Xml.Linq;
+using Unity.VisualScripting;
 
 namespace RebelGameDevs.Utils.UnrealIntegration
 {
@@ -25,10 +27,25 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	//Defined static class helpers:
 	public static class UnrealIntegrationAddons
 	{
+
+		public static void SetMouseOptions(bool isVisible)
+		{
+			Cursor.visible = isVisible;
+		}
+		public static void SetMouseOptions(CursorLockMode state)
+		{
+			Cursor.lockState = state;
+		}
+		public static void SetMouseOptions(bool isVisible, CursorLockMode state)
+		{
+			Cursor.lockState = state;
+			Cursor.visible = isVisible;
+		}
+
 		//Casting:
 		public static bool CastToActor(MonoBehaviour mono, out Actor actor)
 		{
-			if(mono is Actor)
+			if (mono is Actor)
 			{
 				actor = (Actor)mono;
 				return true;
@@ -40,7 +57,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 
 		public static bool CastToUnrealModule(UnityEngine.Object scriptable, out UnrealModule uModule)
 		{
-			if(scriptable is ScriptableObject)
+			if (scriptable is ScriptableObject)
 			{
 				uModule = (UnrealModule)scriptable;
 				return true;
@@ -53,27 +70,27 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		public static bool TryGetActorOfClass(out Actor actor)
 		{
 			actor = UnityEngine.Object.FindObjectOfType<Actor>();
-			if(actor is null) return false;
+			if (actor is null) return false;
 			return true;
 		}
-		
+
 		//Very costly, use sparingly (it goes through every GameObejct in the scene and check the type and iterates through the entire scene) - O(N^N) best case time:
 		public static bool TryGetActorsOfClass(out Actor[] actors)
 		{
 			actors = UnityEngine.Object.FindObjectsOfType<Actor>();
-			if(actors is null || actors.Length < 1) return false;
+			if (actors is null || actors.Length < 1) return false;
 			return true;
 		}
 		//If actor is properly destroyed it will call the on destroy method:
 		public static void DestroyUnrealObject(UnrealObject uObject)
 		{
-			if(uObject is null) return;
+			if (uObject is null) return;
 			uObject.onDestroyCall?.Invoke();
 			UnityEngine.Object.Destroy(uObject);
 		}
 		public static void DestroyActor(this Actor actor)
 		{
-			if(actor is null) return;
+			if (actor is null) return;
 			actor.onDestroyCall?.Invoke();
 			UnityEngine.Object.Destroy(actor);
 		}
@@ -103,7 +120,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		public static void InitializeEventSystem()
 		{
 			_eventSystem = UnityEngine.Object.FindObjectOfType<EventSystem>();
-			if(_eventSystem is not null) return;
+			if (_eventSystem is not null) return;
 
 			GameObject eventSystemObject = new GameObject("EventSystem", new Type[] { typeof(EventSystem), typeof(StandaloneInputModule) });
 			_eventSystem = eventSystemObject.GetComponent<EventSystem>();
@@ -133,18 +150,18 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		protected UnityEngine.UI.Graphic graphic;
 		public Action onStartHover, onStopHover, onPressed, onReleased, onEnabled, onDisabled;
 		protected bool isDisabled => !graphic.raycastTarget;
-		private void Awake() 
+		private void Awake()
 		{
 			//Find graphic:
-			if(!TryGetComponent(out graphic))Debug.Log($"ERROR: No Graphic on UI Object: <color=green>{this}</color>. " +
+			if (!TryGetComponent(out graphic)) Debug.Log($"ERROR: No Graphic on UI Object: <color=green>{this}</color>. " +
 				$"NOTE: Graphic components are items such as Image, Text Mesh Pro, Button, Sprite, etc.");
-			
+
 			//Find parent widget:
 			parent = GetComponentInParent<UIWidget>();
-			if(parent is null) Debug.Log($"ERROR: No parent Widget found for UI Object: <color=green>{this}</color>.");
+			if (parent is null) Debug.Log($"ERROR: No parent Widget found for UI Object: <color=green>{this}</color>.");
 
 			//Call "BeginPlay" method:
-			BeginPlay(); 
+			BeginPlay();
 		}
 		public void Enable()
 		{
@@ -163,14 +180,14 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		//Hovered On:
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			if(isDisabled) return;
+			if (isDisabled) return;
 			onStartHover?.Invoke();
 			StartHovering();
 		}
 		//Hovered Off:
 		public void OnPointerExit(PointerEventData eventData)
 		{
-			if(isDisabled) return;
+			if (isDisabled) return;
 			onStopHover?.Invoke();
 			StopHovering();
 		}
@@ -178,7 +195,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		//Clicked:
 		public void OnPointerDown(PointerEventData eventData)
 		{
-			if(isDisabled) return;
+			if (isDisabled) return;
 			onPressed?.Invoke();
 			Pressed();
 		}
@@ -186,7 +203,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		//Released:
 		public void OnPointerUp(PointerEventData eventData)
 		{
-			if(isDisabled) return;
+			if (isDisabled) return;
 			onReleased?.Invoke();
 			Released();
 		}
@@ -197,8 +214,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		protected virtual void Disabled() { }
 		protected virtual void Enabled() { }
 	}
-	public abstract class UnrealModule : ScriptableObject{}
-	public abstract class Gamemode : UnrealObject 
+	public abstract class UnrealModule : ScriptableObject { }
+	public abstract class Gamemode : UnrealObject
 	{
 		private readonly float HEIGHTCHECK = 100000;
 		[SerializeField] private Pawn pawnType;
@@ -209,8 +226,8 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		private void Start()
 		{
 			//Check for empty fields:
-			if(!ErrorCatch()) return;
-			
+			if (!ErrorCatch()) return;
+
 			//Set gamemode:
 			GameManager.SetGamemode(this);
 
@@ -224,14 +241,14 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			//Level blueprint:
 			if (levelBlueprintType is not null)
 			{
-				GameManager.SetLevelBlueprint(Instantiate(levelBlueprintType.gameObject, GrabWorldPlayerSpawn(), 
+				GameManager.SetLevelBlueprint(Instantiate(levelBlueprintType.gameObject, GrabWorldPlayerSpawn(),
 					GetWorldPlayerRotation(), transform).GetComponent<LevelBlueprint>());
 			}
 
 			//Finished gamemode initialization: attempt to invoke actions and start level blueprint:
 			pawn.InitializedByGamemode();
 			pawn.hud.InitializedByGamemode();
-			if(GameManager.LevelBlueprint is not null) StartCoroutine(GameManager.LevelBlueprint.LevelStart());
+			if (GameManager.LevelBlueprint is not null) StartCoroutine(GameManager.LevelBlueprint.LevelStart());
 		}
 		private bool ErrorCatch()
 		{
@@ -249,19 +266,20 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		}
 		private Vector3 GrabWorldPlayerSpawn()
 		{
-			if(playerStart is null)
-				if(Physics.Raycast(Vector3.up * HEIGHTCHECK, Vector3.down, out RaycastHit hitResult, 999999))
+			if (playerStart is null)
+				if (Physics.Raycast(Vector3.up * HEIGHTCHECK, Vector3.down, out RaycastHit hitResult, 999999))
 					return hitResult.point;
 			return Vector3.zero;
 		}
 		private Quaternion GetWorldPlayerRotation()
 		{
-			if(playerStart is null) return Quaternion.identity;
+			if (playerStart is null) return Quaternion.identity;
 			return playerStart.transform.rotation;
 		}
 	}
-	public abstract class HUD : UnrealObject 
+	public abstract class HUD : UnrealObject
 	{
+		[HideInInspector] public Pawn pawn;
 		public bool AddToViewPort<Widget>(UIWidget widget, out Widget instancedWidget) where Widget : UIWidget
 		{
 			if (widget is null || widget is not Widget)
@@ -270,6 +288,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 				return false;
 			}
 			instancedWidget = Instantiate(widget, transform).GetComponent<Widget>();
+			instancedWidget.parent = pawn;
 			return true;
 		}
 	}
@@ -277,9 +296,18 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	{
 		public virtual IEnumerator LevelStart() { yield break; }
 	}
-	public abstract class Actor	: UnrealObject {}
-	public abstract class Pawn : Actor
+	public abstract class Actor : UnrealObject { }
+	[System.Serializable] public abstract class ActorComponent
 	{
+		//No Methods like Update or Begin Play, this is meant to house methods
+		//Not tied to an actor to act as a component module class created inside of the actor class.
+		[HideInInspector] public UnrealObject parent;
+		public virtual void Initialize(UnrealObject uObject) { parent = uObject; }
+	}
+	public static class UnrealInput
+	{
+		private static Dictionary<UnrealObject, ObjectInputData> dictionary = new Dictionary<UnrealObject, ObjectInputData>();
+		
 		private class InputPerformedHandler
 		{
 			public Coroutine currentCo;
@@ -306,105 +334,166 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 					yield return null;
 				}
 			}
-			public virtual void InitializedByGamemode() { }
 		}
-		[HideInInspector] public HUD hud;
-
-		//Controls - [NOTE needs to be casted to get Controls back]:
-		private IInputActionCollection inputInstance = null;
-		private Dictionary<InputAction, InputPerformedHandler> whileHeldActions;
-
-		//Validate Input will take in a Template of a IInputActionCollection interface and make a new control:
-		private Controls ValidateInput<Controls>() where Controls : IInputActionCollection, new()
+		private class ObjectInputData
 		{
-			if(inputInstance is null)
+			public UnrealObject parent;
+
+			//Controls - [NOTE needs to be casted to get Controls back]:
+			public IInputActionCollection inputInstance = null;
+			public Dictionary<InputAction, InputPerformedHandler> whileHeldActions;
+			//Validate Input will take in a Template of a IInputActionCollection interface and make a new control:
+
+			public ObjectInputData (UnrealObject uObject)
 			{
-				inputInstance = new Controls();
-				whileHeldActions = new Dictionary<InputAction, InputPerformedHandler>();
+				parent = uObject;
 			}
-			return (Controls)inputInstance;
-		}
-		public Controls GetInputMappingContext<Controls>() where Controls : IInputActionCollection, new()
-		{
-			var controls = ValidateInput<Controls>();
-			return controls;
-		}
+			private Controls ValidateInput<Controls>() where Controls : IInputActionCollection, new()
+			{
+				if(inputInstance is null)
+				{
+					inputInstance = new Controls();
+					whileHeldActions = new Dictionary<InputAction, InputPerformedHandler>();
+				}
+				return (Controls)inputInstance;
+			}
+			public Controls GetInputMappingContext<Controls>() where Controls : IInputActionCollection, new()
+			{
+				var controls = ValidateInput<Controls>();
+				return controls;
+			}
 
-		//Create Input:
-		public Controls CreateInput<Controls>() where Controls : IInputActionCollection, new()
-		{
-			var controls = ValidateInput<Controls>();
-			return controls;
-		}
+			//Create Input:
+			public Controls CreateInput<Controls>() where Controls : IInputActionCollection, new()
+			{
+				var controls = ValidateInput<Controls>();
+				return controls;
+			}
 
-		//Enable Input:
-		public bool EnableInput()
+			//Enable Input:
+			public bool EnableInput()
+			{
+				if(inputInstance is null) return false;
+				inputInstance.Enable();
+				return true;
+			}
+
+			//Disables input:
+			public bool DisableInput()
+			{
+				if(inputInstance is null) return false;
+				inputInstance.Disable();
+				return true;
+			}
+
+			//Subscribe to an event on button action type:
+			public void SubscribeToEvent(InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
+			{
+				switch(type)
+				{
+					case InputActionType.Started:
+						action.started += eventToCall;
+						return;
+					case InputActionType.Performed:
+						action.performed += eventToCall;
+						return;
+					case InputActionType.Held:
+						//Create a new class to hold the event and pass a Unreal Object type and store in dictionary:
+						whileHeldActions[action] = new InputPerformedHandler(eventToCall, parent);
+
+						//subscribe:
+						action.performed += whileHeldActions[action].onPerformed;
+						action.canceled += whileHeldActions[action].onCanceled;
+						return;
+					case InputActionType.Canceled:
+						action.canceled += eventToCall;
+						return;
+				}
+			}
+
+			//Ubsubscribe to an event on button action type:
+			public void UnsubscribeToEvent(InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
+			{
+				switch(type)
+				{
+					case InputActionType.Started:
+						action.started -= eventToCall;
+						return;
+					case InputActionType.Performed:
+						action.performed -= eventToCall;
+						return;
+					case InputActionType.Held:
+						//If not contians key - leave:
+						if(!whileHeldActions.ContainsKey(action)) return;
+
+						//else unsubscribe:
+						action.performed -= whileHeldActions[action].onPerformed;
+						action.canceled -= whileHeldActions[action].onCanceled;
+						whileHeldActions.Remove(action);
+						return;
+					case InputActionType.Canceled:
+						action.canceled -= eventToCall;
+						return;
+				}
+			}
+		}
+		public static bool EnableInput(UnrealObject uObject)
 		{
-			if(inputInstance is null) return false;
-			inputInstance.Enable();
+			bool value = false;
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
+				value = associtatedInput.EnableInput();
+			return value;
+		}
+		public static bool DisableInput(UnrealObject uObject)
+		{
+			bool value = false;
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput)) 
+				value = associtatedInput.DisableInput();
+			return value;
+		}
+		public static void SubscribeToEvent(UnrealObject uObject, InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
+		{
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
+				associtatedInput.SubscribeToEvent(action, type, eventToCall);
+		}
+		public static void UnsubscribeToEvent(UnrealObject uObject, InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
+		{
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
+				associtatedInput.UnsubscribeToEvent(action, type, eventToCall);
+		}
+		public static Controls GetInputMappingContext<Controls>(UnrealObject uObject) where Controls : IInputActionCollection, new()
+		{
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
+				return associtatedInput.GetInputMappingContext<Controls>();
+			return default(Controls);
+		}
+		public static void CreateInput<Controls>(UnrealObject uObject) where Controls : IInputActionCollection, new()
+		{
+			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
+				associtatedInput.CreateInput<Controls>();
+		}
+		public static bool Map(UnrealObject uObject)
+		{
+			if(dictionary.ContainsKey(uObject)) return false;
+			ObjectInputData newInputData = new ObjectInputData(uObject);
+			dictionary.Add(uObject, newInputData);
 			return true;
 		}
-
-		//Disables input:
-		public bool DisableInput()
+		public static bool UnMap(UnrealObject unrealObject)
 		{
-			if(inputInstance is null) return false;
-			inputInstance.Disable();
+			if(dictionary.ContainsKey(unrealObject)) return false;
+			dictionary.Remove(unrealObject);
 			return true;
-		}
-
-		//Subscribe to an event on button action type:
-		public void SubscribeToEvent(InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
-		{
-			switch(type)
-			{
-				case InputActionType.Started:
-					action.started += eventToCall;
-					return;
-				case InputActionType.Performed:
-					action.performed += eventToCall;
-					return;
-				case InputActionType.Held:
-					//Create a new class to hold the event and pass a Unreal Object type and store in dictionary:
-					whileHeldActions[action] = new InputPerformedHandler(eventToCall, this);
-
-					//subscribe:
-					action.performed += whileHeldActions[action].onPerformed;
-					action.canceled += whileHeldActions[action].onCanceled;
-					return;
-				case InputActionType.Canceled:
-					action.canceled += eventToCall;
-					return;
-			}
-		}
-
-		//Ubsubscribe to an event on button action type:
-		public void UnsubscribeToEvent(InputAction action, InputActionType type, Action<InputAction.CallbackContext> eventToCall)
-		{
-			switch(type)
-			{
-				case InputActionType.Started:
-					action.started -= eventToCall;
-					return;
-				case InputActionType.Performed:
-					action.performed -= eventToCall;
-					return;
-				case InputActionType.Held:
-					//If not contians key - leave:
-					if(!whileHeldActions.ContainsKey(action)) return;
-
-					//else unsubscribe:
-					action.performed -= whileHeldActions[action].onPerformed;
-					action.canceled -= whileHeldActions[action].onCanceled;
-					whileHeldActions.Remove(action);
-					return;
-				case InputActionType.Canceled:
-					action.canceled -= eventToCall;
-					return;
-			}
 		}
 	}
-	public abstract class CharacterController : Pawn {}
-	public abstract class UIWidget : UnrealObject {}
+	public abstract class Pawn : Actor
+	{
+		
+		[HideInInspector] public HUD hud;
+	}
+	public abstract class UIWidget : UnrealObject 
+	{
+		[HideInInspector] public Actor parent;
+	}
 }
 
