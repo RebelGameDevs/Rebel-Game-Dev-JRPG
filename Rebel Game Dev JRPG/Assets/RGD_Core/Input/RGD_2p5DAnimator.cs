@@ -1,15 +1,15 @@
 namespace RebelGameDevs.Utils.Input
 {
+    using RebelGameDevs.Utils.UnrealIntegration;
     using UnityEngine;
-    using static RebelGameDevs.Utils.World.RGD_Vector3Methods;
     public class RGD_2p5DAnimator : MonoBehaviour
     {
         //Hashing:
-        private static readonly int Idle = Animator.StringToHash("Idle");
-        private static readonly int Walk = Animator.StringToHash("Walk");
-        private static readonly int Run = Animator.StringToHash("Run");
-        private static readonly int JumpUp = Animator.StringToHash("JumpUp");
-        private static readonly int JumpDown = Animator.StringToHash("JumpDown");
+        protected static int Idle = Animator.StringToHash("Idle");
+        protected static int Walk = Animator.StringToHash("Walk");
+        protected static int Run = Animator.StringToHash("Run");
+        protected static int JumpUp = Animator.StringToHash("JumpUp");
+        protected static int JumpDown = Animator.StringToHash("JumpDown");
 
         [SerializeField] private RGD_2p5DController playerController;
         private SpriteRenderer playersSpriteRenderer;
@@ -32,7 +32,7 @@ namespace RebelGameDevs.Utils.Input
         {
             if(playerController.GetVelocity().y >= .1f) return JumpUp;
             if(playerController.GetVelocity().y <= -.1f) return JumpDown;
-            if(playerController.IsSprinting) return Run;
+            if(playerController.isSprinting) return Run;
             if((Mathf.Abs(playerController.GetVelocity().x) >= .1f) || (Mathf.Abs(playerController.GetVelocity().z) >= .1f)) return Walk;
             return Idle;
         }

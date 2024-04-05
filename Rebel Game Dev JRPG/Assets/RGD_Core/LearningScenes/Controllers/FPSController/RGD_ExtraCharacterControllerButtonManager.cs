@@ -7,19 +7,19 @@ namespace RebelGameDevs.Extra
         [SerializeField] private RGD_CharacterController characterController;
         public void ChangeWalkSpeed(float speedChange)
         {
-            characterController.getter_walkSpeed += speedChange;
+            characterController.walkSpeed += speedChange;
         }
         public void ChangeSprintSpeed(float speedChange)
         {
-            characterController.getter_walkSpeed += speedChange;
+            characterController.sprintSpeed += speedChange;
         }
         public void ChangeJumpForce(float amount)
         {
-            characterController.getter_jumpForce += amount;
+            characterController.jumpForce += amount;
         }
         public void ChangeGravity(float amount)
         {
-            characterController.getter_gravity += amount;
+            characterController.gravity += amount;
         }
     }
 }

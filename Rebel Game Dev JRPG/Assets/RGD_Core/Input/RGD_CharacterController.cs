@@ -1,3 +1,4 @@
+using RebelGameDevs.Utils.UnrealIntegration;
 using RebelGameDevs.Utils.Input;
 using System.Collections;
 using UnityEngine;
@@ -8,11 +9,10 @@ using static RebelGameDevs.Utils.RebelGameDevsEditorHelpers;
 namespace RebelGameDevs.Utils.Input
 {
     using UnityEngine;
-    [ExecuteInEditMode] public class RGD_CharacterController : MonoBehaviour
+    [RequireComponent(typeof(CharacterController))] [ExecuteInEditMode] public class RGD_CharacterController : Pawn
     {
         //Lambdas:
-        [HideInInspector] public bool IsSprinting => canSprint && Input.GetKey(sprintKey);
-        [HideInInspector] public bool ShouldJump => (!holdKeyToJump ? Input.GetKeyDown(jumpKey) : Input.GetKey(jumpKey)) && characterController.isGrounded;
+        [HideInInspector] public bool isSprinting = false;
 
         //Inspector Parameters:
         [Header("Functional Options: ")]
@@ -21,23 +21,16 @@ namespace RebelGameDevs.Utils.Input
         [SerializeField] protected bool canJump = true;
         [SerializeField] protected bool holdKeyToJump = true;
 
-        [Header("Controls: ")]
-        public KeyCode sprintKey = KeyCode.LeftShift;
-        public KeyCode jumpKey = KeyCode.Space;
-
         [Header("Movement Parameters: ")]
-        [SerializeField] public float walkSpeed = 3.0f;
-        [SerializeField] public float sprintSpeed = 6.0f;
-        //Getter Setters:
-        public float getter_walkSpeed { get {return walkSpeed;} set {walkSpeed = value;} }
-        public float getter_sprintSpeed { get {return sprintSpeed;} set {sprintSpeed = value;} }
-
+        public float walkSpeed = 3.0f;
+        public float sprintSpeed = 6.0f;
 
         [Header("Look Parameters: ")]
         [SerializeField, Range(1, 10)] protected float lookSpeedX = 3.0f;
         [SerializeField, Range(1, 10)] protected float lookSpeedY = 2.0f;
         [SerializeField, Range(1, 180)] protected float upperLookLimit = 80.0f;
         [SerializeField, Range(1, 180)] protected float lowerLookLimit = 80.0f;
+
         //Getter Setters:
         public float getter_lookSpeedX { get {return lookSpeedX;} set {lookSpeedX = value;} }
         public float getter_lookSpeedY { get {return lookSpeedY;} set {lookSpeedY = value;} }
@@ -57,16 +50,10 @@ namespace RebelGameDevs.Utils.Input
         }
 
         [Header("Jumping Parameters: ")]
-        [SerializeField] protected float jumpForce = 8.0f;
-        public float getter_jumpForce { get {return jumpForce;} set {jumpForce = value;} }
-
+        public float jumpForce = 8.0f;
 
         [Header("Physics: ")]
-        [SerializeField] protected float gravity = 30.0f;
-        
-        //Depreciated:
-        //[SerializeField] protected LayerMask ground;
-        public float getter_gravity { get {return gravity;} set {gravity = value;} }
+        public float gravity = 30.0f;
 
         //Private Variables:
         private Camera playerCamera;
@@ -74,19 +61,22 @@ namespace RebelGameDevs.Utils.Input
 
         private Vector3 moveDirection;
         private Vector2 currentInput;
+        private Vector2 rawInput;
 
         private float rotationX = 0;
 
         //Methods:
-        private void Awake()
+        protected override void BeginPlay()
         {
-            //Grab the character Controller component:
-            characterController = GetComponent<CharacterController>();
+            //Initialize input:
+            InitializeInput();
+
 
             //Initialize Cursor:
             SetMouseOptions(false, CursorLockMode.Locked);
 
-            //Grab reference to the player camera:
+            //Grab references:
+            characterController = GetComponent<CharacterController>();
             playerCamera = GetComponentInChildren<Camera>();
             if (playerCamera == null) { Debug.LogError("<color=red> ERROR:</color> No Camera as a child on the <color=green>character controller</color>."); Destroy(this);}
         }
@@ -103,27 +93,19 @@ namespace RebelGameDevs.Utils.Input
                 //Handles Mouse Orientation:
                 HandleMouseLook();
 
-                //Handles Jump:
-                if(canJump) HandleJump();
-
                 //Finally Apply Movement:
                 ApplyFinalMovement();
             }
         }
-        /*
-        =========================================================================================================
-        DisableOrEnableAllInput:
-
-        Params:
-            value - bool, will just set can move
-
-        Description:
-            (basically if your do not want to use the set can move function)
-        =========================================================================================================
-        */
-        public void DisableOrEnableAllInput(bool value)
+        private void InitializeInput()
         {
-            canMove = value;
+            UnrealInput.Map(this);
+            UnrealInput.CreateInput<RGD_Controls>(this);
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Sprint, InputActionType.Performed, (context) => { if(canSprint) isSprinting = true; });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Sprint, InputActionType.Canceled, (context) => { isSprinting = false; });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Performed, (context) => { HandleJump(); });
+            UnrealInput.SubscribeToEvent(this, UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Jump, InputActionType.Held, (context) => { if(holdKeyToJump) HandleJump(); });
+            UnrealInput.EnableInput(this);
         }
         /*
         =========================================================================================================
@@ -139,7 +121,8 @@ namespace RebelGameDevs.Utils.Input
         */
         private void HandleMovementInput()
         {
-            currentInput = new Vector2((IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Vertical"), (IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Horizontal"));
+            rawInput = UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.Move.ReadValue<Vector2>();
+            currentInput = new Vector2((isSprinting ? sprintSpeed : walkSpeed) * rawInput.y, (isSprinting ? sprintSpeed : walkSpeed) * rawInput.x);
             float moveDirectionY = moveDirection.y;
             moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y);
             moveDirection.y = moveDirectionY;
@@ -158,10 +141,11 @@ namespace RebelGameDevs.Utils.Input
         */
         private void HandleMouseLook()
         {
-            rotationX -= Input.GetAxis("Mouse Y") * lookSpeedY;
+            Vector2 delta = UnrealInput.GetInputMappingContext<RGD_Controls>(this).DefaultMapping.MouseDelta.ReadValue<Vector2>() * 0.1f;
+            rotationX -= delta.y * lookSpeedY;
             rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-            transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeedX, 0);
+            transform.rotation *= Quaternion.Euler(0, delta.x * lookSpeedX, 0);
         }
         /*
         =========================================================================================================
@@ -176,7 +160,8 @@ namespace RebelGameDevs.Utils.Input
         */
         private void HandleJump()
         {
-            if(ShouldJump) moveDirection.y = jumpForce;
+            if(!canJump || !characterController.isGrounded) return; 
+            moveDirection.y = jumpForce;
         }
         /*
         =========================================================================================================
@@ -193,7 +178,6 @@ namespace RebelGameDevs.Utils.Input
         private void ApplyFinalMovement()
         {
             if(!characterController.isGrounded) moveDirection.y -= gravity * Time.deltaTime;
-      
 
             characterController.Move(moveDirection * Time.deltaTime);
         }
@@ -261,11 +245,6 @@ class RGD_CharacterControllerEditor : Editor
     SerializedProperty canSprint;
     SerializedProperty canJump;
     SerializedProperty holdToJumpKey;
-
-    SerializedProperty groundLayerMask;
-
-    private bool Sprint_GrabbingInput = false;
-    private bool Jump_GrabbingInput = false;
 
     private void OnEnable () 
     {
@@ -336,12 +315,12 @@ class RGD_CharacterControllerEditor : Editor
 
         //walk speed:
         GUI.backgroundColor = Color.black;
-        GUILayout.SelectionGrid(1, new string[1] {$"Players Gravity: {script.getter_gravity}"}, 1);
+        GUILayout.SelectionGrid(1, new string[1] {$"Players Gravity: {script.gravity}"}, 1);
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("+")) {script.getter_gravity += 1f;}
+        if (GUILayout.Button("+")) {script.gravity += 1f;}
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("-")) {script.getter_gravity -= 1f;}
+        if (GUILayout.Button("-")) {script.gravity -= 1f;}
         EditorGUILayout.EndHorizontal();
     }
     private void HandleMovementParams(RGD_CharacterController script)
@@ -350,22 +329,22 @@ class RGD_CharacterControllerEditor : Editor
 
         //walk speed:
         GUI.backgroundColor = Color.black;
-        GUILayout.SelectionGrid(1, new string[1] {$"Walk Speed: {script.getter_walkSpeed}"}, 1);
+        GUILayout.SelectionGrid(1, new string[1] {$"Walk Speed: {script.walkSpeed}"}, 1);
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("+")) {script.getter_walkSpeed += 0.25f;}
+        if (GUILayout.Button("+")) {script.walkSpeed += 0.25f;}
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("-")) {script.getter_walkSpeed -= 0.25f;}
+        if (GUILayout.Button("-")) {script.walkSpeed -= 0.25f;}
         EditorGUILayout.EndHorizontal();
 
         //run speed:
         GUI.backgroundColor = Color.black;
-        GUILayout.SelectionGrid(1, new string[1] {$"Sprint Speed: {script.getter_sprintSpeed}"}, 1);
+        GUILayout.SelectionGrid(1, new string[1] {$"Sprint Speed: {script.sprintSpeed}"}, 1);
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("+")) {script.getter_sprintSpeed += 0.25f;}
+        if (GUILayout.Button("+")) {script.sprintSpeed += 0.25f;}
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("-")) {script.getter_sprintSpeed -= 0.25f;}
+        if (GUILayout.Button("-")) {script.sprintSpeed -= 0.25f;}
         EditorGUILayout.EndHorizontal();
 
         //Camera Look Speedx
@@ -410,12 +389,12 @@ class RGD_CharacterControllerEditor : Editor
 
         //Camera Look ClampX
         GUI.backgroundColor = Color.black;
-        GUILayout.SelectionGrid(1, new string[1] {$"Jump Force: {script.getter_jumpForce}"}, 1);
+        GUILayout.SelectionGrid(1, new string[1] {$"Jump Force: {script.jumpForce}"}, 1);
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("+")) {script.getter_jumpForce += 0.5f;}
+        if (GUILayout.Button("+")) {script.jumpForce += 0.5f;}
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("-")) {script.getter_jumpForce -= 0.5f;}
+        if (GUILayout.Button("-")) {script.jumpForce -= 0.5f;}
         EditorGUILayout.EndHorizontal();
     }
     private void HandleMovementBooleans()
@@ -439,30 +418,10 @@ class RGD_CharacterControllerEditor : Editor
     {
         GUI.backgroundColor = new Color32(255, 150, 0, 255);
         EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button($"Sprint Key: [{script.sprintKey}]"))
-        {
-            script.sprintKey = KeyCode.None;
-            Sprint_GrabbingInput = true;
-        }
-        if(GUILayout.Button($"Jump Key: [{script.jumpKey}]"))
-        {
-            script.jumpKey = KeyCode.None;
-            Jump_GrabbingInput = true;
-        }
+        if (GUILayout.Button($"Section Coming Soon!")) { }
         EditorGUILayout.EndHorizontal();
-        if(Sprint_GrabbingInput) InputGrabberSprintKey(script);
-        if(Jump_GrabbingInput) InputGrabberJumpKey(script);
     }
-    private void InputGrabberSprintKey(RGD_CharacterController script)
-    {
-        script.sprintKey = (KeyCode)EditorGUILayout.EnumPopup("Sprint Key:", script.sprintKey);
-        if(script.sprintKey != KeyCode.None) Sprint_GrabbingInput = false;
-    }
-    private void InputGrabberJumpKey(RGD_CharacterController script)
-    {
-        script.jumpKey = (KeyCode)EditorGUILayout.EnumPopup("Jump Key:", script.jumpKey);
-        if(script.jumpKey != KeyCode.None) Jump_GrabbingInput = false;
-    }
+
     private Color ColorChecker(bool value)
     {
         if(value) return new Color32(0, 200, 255, 255);
