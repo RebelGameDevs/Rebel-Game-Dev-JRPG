@@ -266,15 +266,14 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		}
 		private Vector3 GrabWorldPlayerSpawn()
 		{
-			if (playerStart is null)
-				if (Physics.Raycast(Vector3.up * HEIGHTCHECK, Vector3.down, out RaycastHit hitResult, 999999))
-					return hitResult.point;
+			if (playerStart != null) return playerStart.transform.position;
+			if (Physics.Raycast(Vector3.up * HEIGHTCHECK, Vector3.down, out RaycastHit hitResult, 999999)) return hitResult.point;
 			return Vector3.zero;
 		}
 		private Quaternion GetWorldPlayerRotation()
 		{
-			if (playerStart is null) return Quaternion.identity;
-			return playerStart.transform.rotation;
+			if (playerStart != null) return playerStart.transform.rotation;
+			return Quaternion.identity;
 		}
 	}
 	public abstract class HUD : UnrealObject
