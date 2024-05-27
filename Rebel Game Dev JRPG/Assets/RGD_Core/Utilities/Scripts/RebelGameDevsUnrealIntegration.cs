@@ -132,10 +132,9 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	{
 		//On proper actor destroys:
 		public Action onDestroyCall;
-		public Action onInitializeByGamemode;
 
 		//Methods:
-		public virtual void InitializedByGamemode() { onInitializeByGamemode?.Invoke(); }
+		public virtual void InitializedByGamemode() {}
 		private void Awake() { BeginPlay(); }
 		private void Update() { EventTick(); }
 		private void FixedUpdate() { EventTickLate(); }
@@ -223,6 +222,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 		[SerializeField] private HUD hudType;
 		[SerializeField] private LevelBlueprint levelBlueprintType;
 		[SerializeField] private PlayerStart playerStart;
+		[HideInInspector] public bool initialized = false;
 
 		private void Start()
 		{
@@ -250,6 +250,7 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 			pawn.InitializedByGamemode();
 			pawn.hud.InitializedByGamemode();
 			if (GameManager.LevelBlueprint is not null) StartCoroutine(GameManager.LevelBlueprint.LevelStart());
+			initialized = true;
 		}
 		private bool ErrorCatch()
 		{
