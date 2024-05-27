@@ -132,9 +132,10 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 	{
 		//On proper actor destroys:
 		public Action onDestroyCall;
+		public Action onInitializeByGamemode;
 
 		//Methods:
-		public virtual void InitializedByGamemode() { }
+		public virtual void InitializedByGamemode() { onInitializeByGamemode?.Invoke(); }
 		private void Awake() { BeginPlay(); }
 		private void Update() { EventTick(); }
 		private void FixedUpdate() { EventTickLate(); }

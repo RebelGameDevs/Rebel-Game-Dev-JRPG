@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 8953346424585505749}
   - component: {fileID: 8953346424585505751}
   - component: {fileID: 8953346424585505746}
+  - component: {fileID: 1102695869200332818}
   m_Layer: 0
   m_Name: FirstPersonController
   m_TagString: Untagged
@@ -266,3 +267,16 @@ MonoBehaviour:
   baseMaterial: {fileID: 2100000, guid: 0cc5cf5362cf8f745bd04f7cf2807ff7, type: 2}
   colorToInstance: {r: 0, g: 0.7372546, b: 1, a: 1}
   ColorToInstanceEmmission: {r: 0, g: 0, b: 0, a: 0}
+--- !u!114 &1102695869200332818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8953346424585505752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20228f55a724c534190315eac435c790, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactLength: 5

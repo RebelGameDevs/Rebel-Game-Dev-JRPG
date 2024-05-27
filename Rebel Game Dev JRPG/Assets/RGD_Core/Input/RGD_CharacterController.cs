@@ -80,6 +80,10 @@ namespace RebelGameDevs.Utils.Input
             playerCamera = GetComponentInChildren<Camera>();
             if (playerCamera == null) { Debug.LogError("<color=red> ERROR:</color> No Camera as a child on the <color=green>character controller</color>."); Destroy(this);}
         }
+        public override void InitializedByGamemode()
+        {
+            base.InitializedByGamemode();
+        }
         private void Update()
         {
             //Make sure that this is not running in editor as this is using "[ExecuteInEditMode]".
