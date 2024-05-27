@@ -1,0 +1,34 @@
+{
+    "name": "Ryan_Input",
+    "maps": [
+        {
+            "name": "FarmingInSpace",
+            "id": "201cfe93-547b-4053-9263-cddd8f6711f1",
+            "actions": [
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "065d8930-1901-491f-b885-9ba61254b364",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "db01af7f-1ce6-4d97-8579-ef67aaf1c624",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
