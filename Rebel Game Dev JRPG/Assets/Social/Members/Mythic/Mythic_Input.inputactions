@@ -1,0 +1,34 @@
+{
+    "name": "Mythic_Input",
+    "maps": [
+        {
+            "name": "FarmingInSpace",
+            "id": "6c05afdd-40c2-4c7c-b516-83c8fdcfa02f",
+            "actions": [
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "b0de0e88-e27c-4119-b2a9-a409c858bfec",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d74c020a-130c-4303-b8c6-a5fc1fdd7d68",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

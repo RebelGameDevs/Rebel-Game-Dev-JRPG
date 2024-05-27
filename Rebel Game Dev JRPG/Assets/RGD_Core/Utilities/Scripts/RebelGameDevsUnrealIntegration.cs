@@ -466,10 +466,11 @@ namespace RebelGameDevs.Utils.UnrealIntegration
 				return associtatedInput.GetInputMappingContext<Controls>();
 			return default(Controls);
 		}
-		public static void CreateInput<Controls>(UnrealObject uObject) where Controls : IInputActionCollection, new()
+		public static Controls CreateInput<Controls>(UnrealObject uObject) where Controls : IInputActionCollection, new()
 		{
 			if(dictionary.TryGetValue(uObject, out ObjectInputData associtatedInput))
-				associtatedInput.CreateInput<Controls>();
+				return associtatedInput.CreateInput<Controls>();
+			return default(Controls);
 		}
 		public static bool Map(UnrealObject uObject)
 		{
