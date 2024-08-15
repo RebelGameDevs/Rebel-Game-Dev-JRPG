@@ -1,4 +1,4 @@
-# Rebel-Game-Dev-JRPG
+# Rebel-Game-Dev
 This is our club-wide project that aims to provide an easy introduction to game development with Unity! We have included various pre-made
 scripts, tools, and scriptable objects for your use :) <br />
 
